@@ -1,0 +1,9 @@
+cve,descrip
+1,Está habitada (vive alguien)
+2,Está en proceso de venta o renta
+3,La usa para vacaciones
+4,Está deshabitada
+5,Está en proceso de construcción
+6,Está inadecuada para habitarse
+7,"La usa con fines distintos a los de habitación (bodega, negocio, etcétera)"
+8,Otra situación

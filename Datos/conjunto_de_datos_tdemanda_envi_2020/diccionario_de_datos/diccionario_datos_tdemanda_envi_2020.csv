@@ -1,0 +1,23 @@
+﻿nombre_campo,longitud,tipo,nemónico,catálogo,rango_claves
+Número de folio consecutivo,7,C,folio,,0000001…0008300
+Número de Vivienda seleccionada,2,C,viv_sel,,01...23
+Número de Hogar en la vivienda,1,C,hogar,,1...4
+Consecutivo de demanda y necesidades de la vivienda,1,C,c_denevi,,1...5
+Pregunta P3A2.2 ¿Quiénes son estas personas?,2,C,p3a2_2,,01...19
+Pregunta P3A2.3 ¿Quiénes son estas personas?,2,C,p3a2_3,,01…10
+Pregunta P3A3 ¿Cuál es el número de cuartos para dormir que (NOMBRE) necesita en la vivienda (NÚMERO DE VIVIENDA)?,1,C,p3a3,p3a3,1…9
+Pregunta P3A4 ¿(NOMBRE) tiene la intención de…?,1,C,p3a4,p3a4,"1…4,9"
+Pregunta P3A5 ¿Cuál es el motivo principal de (NOMBRE) para rentar?,1,C,p3a5,p3a5,"1…6,9"
+"Pregunta P3A6 Para (NOMBRE), ¿cuál es el motivo principal para comprar (construir) una vivienda?",2,C,p3a6,p3a6,01…10
+"Pregunta P3A7 Para la construcción de la vivienda, ¿(NOMBRE)…?",1,C,p3a7,p3a7,"1,2"
+"Pregunta P3A8.1 Para la compra (construcción) de la vivienda (NOMBRE), ¿planea utilizar…?",1,C,p3a8_1,p3a8_1,1…9
+"Pregunta P3A8.2 Para la compra (construcción) de la vivienda (NOMBRE), ¿planea utilizar…?",1,C,p3a8_2,p3a8_2,1…9
+"Pregunta P3A8.3 Para la compra (construcción) de la vivienda (NOMBRE), ¿planea utilizar…?",1,C,p3a8_3,p3a8_3,1…9
+"Pregunta P3A9 Aproximadamente, ¿de cuánto sería el costo de la vivienda que planea adquirir (construir)?",1,C,p3a9,p3a9,"1…6,9"
+Pregunta P3A10 ¿(NOMBRE) ya está buscando (construyendo) la vivienda?,1,C,p3a10,p3a10,"1,2,9"
+Pregunta P3A11 ¿En cuánto tiempo planea (NOMBRE) empezar a buscar (construir) la vivienda?,1,C,p3a11,p3a11,1…9
+Entidad,2,C,ent,ent,01...32
+Tamaño de localidad,1,C,tloc,tloc,1…4
+Estrato de diseño,3,C,est_dis,,001...552
+Unidad primaria de muestreo de diseño,7,C,upm_dis,,0000001...0008300
+Factor de expansión,5,C,factor,,00007…08610
