@@ -1,0 +1,620 @@
+---
+title: "Indices objetivos"
+author: "Veronica Marquez"
+date: "11/1/2022"
+output: word_document
+---
+
+# Cargar la base de datos
+
+```{r}
+DatosO <- read.csv("DatosO.csv")
+```
+
+# Variables a utilizar po indice característica de la ONU
+
+```{r} 
+library(dplyr)
+
+#segTenencia <- DatosO %>%
+  #select("")
+  
+servicios <- DatosO %>%
+  select("Sanitario_conectado_a_drenaje","Como_consigue_agua", "A_donde_conecta_el_drenaje","Luz_electrica", "Combustible_para_cocinar") #Llaves_y_mangueras_en_casa?
+  
+#asequibilidad <- DatosO %>%
+  #select("")
+
+
+habitabilidad <- DatosO %>%
+  select("Material_de_paredes", "Material_de_techo", "Material_de_piso", "Aislamiento_termico_en_techos", "Aislamiento_termico_en_paredes", "Aislamiento_termico_en_ventanas", "Aislamiento_de_ruido_en_techo", "Aislamiento_de_ruido_en_paredes", "Aislamiento_de_ruido_en_ventanas", "Aislamiento_de_ruido_en_puertas", "problemas_vivienda") #hacinamiento
+
+
+accesibilidad <- DatosO %>%
+  select("D_Rampas", "D_Puertas", "D_Banos", "D_Pasamanos")
+
+         
+ubicacion <- DatosO %>%
+  select("Satisfaccion_con_distancia_tiempo_entre_vivienda_y_trabajo", "Satisfaccion_con_distancia_tiempo_entre_vivienda_y_centros_escolares", "Satisfaccion_con_distancia_tiempo_entre_vivienda_y_centros_de_salud", "Satisfaccion_con_distancia_tiempo_entre_vivienda_y_mercados", "Satisfaccion_con_distancia_tiempo_entre_vivienda_y_parques", "Satisfaccion_con_distancia_tiempo_entre_vivienda_y_centros_de_recreacion_culturales")
+
+```
+
+# Observaciones faltantes
+
+```{r}
+
+colSums(is.na(D1))
+```
+
+# Analisis base de datos
+
+
+```{r}
+library(psych)
+describe(servicios)
+
+```
+
+
+```{r}
+library(psych)
+describe(habitabilidad)
+
+```
+
+```{r}
+library(psych)
+describe(accesibilidad)
+
+```
+
+
+```{r}
+library(psych)
+describe(adecuacionCult)
+
+```
+
+```{r}
+library(psych)
+describe(ubicacion)
+
+```
+
+    SERVICIOS
+
+```{r}
+library(psych)
+corPlot(servicios,cex = .6,stars = TRUE, show.legend=FALSE)
+```
+
+
+    2. Determinante de la matriz de correlaciones
+
+```{r}
+#Estimar la matriz de correlaciones
+S<-cor(servicios)
+#Calcular el determinante de la matriz
+det(S)
+```
+No es muy cercano a cero
+
+
+    3. Prueba de contraste de esfericidad de Bartlett
+
+```{r}
+library(psych)
+cortest.bartlett(S,n= 55147)
+```
+
+
+    4. El análisis de suficiencia general o índice Kaiser-Meyer-Olkin
+  
+|Criterio        |Evaluación |
+|----------------|-----------|
+|MSA ≥ 0.9       |Excelente  |
+|0.8 ≤ MSA < 0.9 |Bueno      |
+|0.7 ≤ MSA < 0.8 |Aceptable  |
+|0.6 ≤ MSA < 0.7 |Regular    | <-----
+|0.5 ≤ MSA < 0.6 |Bajo       |
+|MSA < 0.5       |Inaceptable|
+
+
+```{r}
+library(psych)
+KMO(S)
+```
+
+El índice glboal indica que tendríamos un análisis "Regular". En el análisis individual de las variables es posible observar que ninguna tiene un MSA <0.5, por lo tanto no es necesario eliminar varibles en nuestro modelo (Solo si queremos mejorarlo)
+
+#Estandarización de las variables
+
+```{r}
+DzS <- data.frame(scale(servicios)) #Estandarizar las variables del indicador SERVICIOS
+```
+
+#Modelos
+
+```{r}
+library(psych)
+
+modeloS1 <-principal(DzS,nfactors = 5, rotate= "none")
+modeloS1
+
+```
+
+#Estimación del modelo final 
+```{r}
+library(psych)
+modeloS2<-principal(DzS,nfactors = 2, rotate='none')
+modeloS2
+
+```
+# Interpretación de componentes
+
+
+```{r}
+library(psych)
+modeloS2<-principal(DzS,nfactors = 2, rotate="varimax")
+modeloS2
+
+```
+
+
+```{r}
+print(modeloS2$loadings,cut=0.5, sort=TRUE)
+
+```
+
+    Interpretación de las cargas de la matriz rotada
+    
+    ```{r}
+library(psych)
+fa.diagram(modeloS2)
+```
+
+# Componente 1: Servicios externos
+Sanitario_conectado_a_drenaje       
+Como_consigue_agua                  
+A_donde_conecta_el_drenaje         
+Combustible_para_cocinar         
+
+# Componente 2: Luz
+
+Luz_electrica     
+
+Lo cambio a un componente (solo explicaría 44% de la varianza) ???
+
+# Obtención de puntajes
+
+
+```{r}
+library(psych)
+modeloS2<-principal(DzS,nfactors = 2, rotate="varimax",
+                   scores=TRUE,method="regression") #con el método que queramos calcular los puntajes
+
+DzS$PC1<-modeloS2$scores[,1]
+DzS$PC2<-modeloS2$scores[,2]
+```
+
+
+```{r}
+modeloS2$weights #
+
+```
+
+# Alfa de Cronbach
+
+```{r}
+library(psych)
+alpha(DzS[,c(1,2,3,5)],check.keys=TRUE) #variables a utilizar
+```
+
+#Poner el índice de 0 a 100
+
+```{r}
+DzS$Indice1<-with(DzS,100*(PC1-min(PC1))/(max(PC1)-min(PC1))) #Componente 1
+DzS$Indice2<-with(DzS,100*(PC2-min(PC2))/(max(PC2)-min(PC2))) #Componente 2
+```
+
+
+Resultados del modelo 2:
+
+
+                      RC1  RC2
+SS loadings           2.11 1.03
+Proportion Var        0.42 0.21
+Cumulative Var        0.42 0.63
+Proportion Explained  0.67 0.33
+Cumulative Proportion 0.67 1.00
+
+```{r}
+#Ponderadores obtenidos del modelo estimado, renglon "Proportion Var".
+w1S=0.42/(0.42+0.21)
+w2S=0.21/(0.21+0.42)
+#Indice global de Marginación de la base de datos
+
+DzS$IndiceG<-with(DzS,w1S*Indice1+w2S*Indice2) #ponderando los dos índices, nuestro final se llama columna ÍndiceG
+
+```
+
+*Los índices quedaron muy cercanos a 10
+*Checar menos es mejor? / más es mejor? para interpretar el índice
+
+    HABITABILIDAD
+    
+```{r}
+library(psych)
+corPlot(habitabilidad,cex = .6,stars = TRUE, show.legend=FALSE)
+```
+
+2. Determinante de la matriz de correlaciones
+
+```{r}
+#Estimar la matriz de correlaciones
+H<-cor(habitabilidad)
+#Calcular el determinante de la matriz
+det(H)
+```
+3. Prueba de contraste de esfericidad de Bartlett
+
+```{r}
+library(psych)
+cortest.bartlett(S,n= 55147)
+```
+
+    4. El análisis de suficiencia general o índice Kaiser-Meyer-Olkin
+
+```{r}
+library(psych)
+KMO(H)
+```
+
+#Estandarización de las variables
+
+```{r}
+DzH <- data.frame(scale(habitabilidad)) #Estandarizar las variables del indicador HABITABILIDAD
+```
+
+#Modelos
+
+```{r}
+library(psych)
+
+modeloH1 <-principal(DzH,nfactors = 12, rotate= "none")
+modeloH1
+
+```
+
+#Estimación del modelo final 
+```{r}
+library(psych)
+modeloH2<-principal(DzH,nfactors = 3, rotate='none')
+modeloH2
+
+```
+
+# Interpretación de componentes
+
+
+```{r}
+library(psych)
+modeloH2<-principal(DzH,nfactors = 3, rotate="varimax")
+modeloH2
+
+```
+
+```{r}
+print(modeloH2$loadings,cut=0.3, sort=TRUE)
+
+```
+
+Interpretación de las cargas de la matriz rotada
+
+```{r}
+library(psych)
+fa.diagram(modeloH2)
+```
+# Rescalamiento de variables
+
+```{r}
+
+#Dz$PC1<-with(Dz,max(PC1)-PC1)
+#Dz$PC2<-with(Dz,max(PC2)-PC2)
+
+```
+
+
+# Obtención de puntajes
+
+
+```{r}
+library(psych)
+modeloH2<-principal(DzH,nfactors = 3, rotate="varimax",
+                    scores=TRUE,method="regression") #con el método que queramos calcular los puntajes
+
+DzH$PC1<-modeloH2$scores[,1]
+DzH$PC2<-modeloH2$scores[,2]
+DzH$PC3<-modeloH2$scores[,3]
+```
+
+
+```{r}
+modeloH2$weights #
+
+```
+
+# Alfa de Cronbach
+
+```{r}
+library(psych)
+alpha(DzS[,c(1,2,3,5)],check.keys=TRUE) #variables a utilizar
+```
+
+
+#Poner el índice de 0 a 100
+
+```{r}
+DzH$Indice1<-with(DzH,100*(PC1-min(PC1))/(max(PC1)-min(PC1))) #Componente 1
+DzH$Indice2<-with(DzH,100*(PC2-min(PC2))/(max(PC2)-min(PC2))) #Componente 2
+DzH$Indice3<-with(DzH,100*(PC3-min(PC3))/(max(PC3)-min(PC3))) #Componente 2
+```
+
+
+SS loadings           3.85 2.64 1.95
+Proportion Var        0.32 0.22 0.16
+Cumulative Var        0.32 0.54 0.70
+Proportion Explained  0.46 0.31 0.23
+Cumulative Proportion 0.46 0.77 1.00
+
+
+```{r}
+#Ponderadores obtenidos del modelo estimado, renglon "Proportion Var".
+w1H=0.32/(0.32+0.22+0.16)
+w2H=0.22/(0.22+0.32+0.16)
+w3H=0.16/(0.16+0.32+0.22)
+#Indice global de Marginación de la base de datos
+
+DzH$IndiceGH<-with(DzH,w1H*Indice1+w2H*Indice2+w3H*Indice3) #ponderando los dos índices, nuestro final se llama columna ÍndiceG
+
+```
+
+    ACCESIBILIDAD
+    
+1. Matriz Correlacion
+
+```{r}
+library(psych)
+corPlot(accesibilidad,cex = .6,stars = TRUE, show.legend=FALSE)
+```
+
+2. Determinante de la matriz de correlaciones
+
+```{r}
+#Estimar la matriz de correlaciones
+A<-cor(accesibilidad)
+#Calcular el determinante de la matriz
+det(A)
+```
+
+3. Prueba de contraste de esfericidad de Bartlett
+
+```{r}
+library(psych)
+cortest.bartlett(A,n= 55147)
+```
+
+
+4. El análisis de suficiencia general o índice Kaiser-Meyer-Olkin
+
+```{r}
+library(psych)
+KMO(A)
+```
+
+#Estandarización de las variables
+
+```{r}
+DzA <- data.frame(scale(accesibilidad)) #Estandarizar las variables del indicador ACCESIBILIDAD
+```
+
+#Modelos
+
+```{r}
+library(psych)
+
+modeloA1 <-principal(DzA,nfactors = 4, rotate= "none")
+modeloA1
+
+```
+
+#Estimación del modelo final 
+```{r}
+library(psych)
+modeloA2<-principal(DzA,nfactors = 1, rotate='none')
+modeloA2
+
+```
+
+# Interpretación de componentes
+
+
+```{r}
+library(psych)
+modeloA2<-principal(DzA,nfactors = 1, rotate="varimax")
+modeloA2
+
+```
+
+```{r}
+print(modeloA2$loadings,cut=0.5, sort=TRUE)
+
+```
+
+
+# Obtención de puntajes
+
+
+```{r}
+library(psych)
+modeloA2<-principal(DzA,nfactors = 1, rotate="varimax",
+                    scores=TRUE,method="regression") #con el método que queramos calcular los puntajes
+
+DzA$PC1<-modeloA2$scores[,1]
+
+```
+
+
+```{r}
+modeloA2$weights #
+
+```
+
+# Alfa de Cronbach
+
+```{r}
+library(psych)
+alpha(DzA,check.keys=TRUE) #variables a utilizar
+```
+
+
+#Poner el índice de 0 a 100
+
+```{r}
+DzA$Indice1<-with(DzA,100*(PC1-min(PC1))/(max(PC1)-min(PC1))) #Componente 1
+```
+
+*cHECAR, Muchos índices en 100
+
+
+    UBICACION
+    
+
+
+2. Determinante de la matriz de correlaciones
+
+```{r}
+#Estimar la matriz de correlaciones
+U<-cor(ubicacion)
+#Calcular el determinante de la matriz
+det(U)
+```
+
+3. Prueba de contraste de esfericidad de Bartlett
+
+```{r}
+library(psych)
+cortest.bartlett(U,n= 55147)
+```
+
+
+4. El análisis de suficiencia general o índice Kaiser-Meyer-Olkin
+
+```{r}
+library(psych)
+KMO(U)
+```
+
+#Estandarización de las variables
+
+```{r}
+DzU <- data.frame(scale(ubicacion)) #Estandarizar las variables del indicador UBICACION
+```
+
+#Modelos
+
+```{r}
+library(psych)
+
+modeloU1 <-principal(DzU,nfactors = 6, rotate= "none")
+modeloU1
+
+```
+
+#Estimación del modelo final 
+```{r}
+library(psych)
+modeloU2<-principal(DzU,nfactors = 2, rotate='none')
+modeloU2
+
+```
+
+# Interpretación de componentes
+
+
+```{r}
+library(psych)
+modeloU2<-principal(DzU,nfactors = 2, rotate="varimax")
+modeloU2
+
+```
+
+```{r}
+print(modeloU2$loadings,cut=0.5, sort=TRUE)
+
+```
+
+Interpretación de las cargas de la matriz rotada
+
+```{r}
+library(psych)
+fa.diagram(modeloU2)
+```
+
+# Obtención de puntajes
+
+
+```{r}
+library(psych)
+modeloU2<-principal(DzU,nfactors = 2, rotate="varimax",
+                    scores=TRUE,method="regression") #con el método que queramos calcular los puntajes
+
+DzU$PC1<-modeloU2$scores[,1]
+DzU$PC2<-modeloU2$scores[,2]
+```
+
+
+```{r}
+modeloU2$weights #
+
+```
+
+# Alfa de Cronbach PENDIENTE
+
+```{r}
+library(psych)
+alpha(DzS[,c(1,2,3,5)],check.keys=TRUE) #variables a utilizar
+```
+
+
+#Poner el índice de 0 a 100
+
+```{r}
+DzU$Indice1<-with(DzS,100*(PC1-min(PC1))/(max(PC1)-min(PC1))) #Componente 1
+DzU$Indice2<-with(DzS,100*(PC2-min(PC2))/(max(PC2)-min(PC2))) #Componente 2
+```
+
+
+SS loadings           2.37 1.75
+Proportion Var        0.40 0.29
+Cumulative Var        0.40 0.69
+Proportion Explained  0.58 0.42
+Cumulative Proportion 0.58 1.00
+
+
+```{r}
+#Ponderadores obtenidos del modelo estimado, renglon "Proportion Var".
+w1U=0.40/(0.40+0.29)
+w2U=0.29/(0.29+0.40)
+#Indice global de Marginación de la base de datos
+
+DzU$IndiceU<-with(DzU,w1U*Indice1+w2U*Indice2) #ponderando los dos índices, nuestro final se llama columna ÍndiceG
+
+```
+
+* Indices salen entre 12 -20
+
+
+
+
+
