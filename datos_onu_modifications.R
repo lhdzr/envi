@@ -43,6 +43,7 @@ head(datos_onu[E3F])
 head(datos_onu['P4_14'])
 # REVERSE FACTORS
 datos_onu = datos_onu %>% mutate(P4_14 = recode(P4_14, '1'=5,'2'=4,'3'=3,'4'=2,'5'=1))
+datos_onu$P4_14[is.na(datos_onu$P4_14)] = 6
 head(datos_onu['P4_14'])
 
 # ELEMENTS WITH 5 CHOICES, ONE OF WHICH IS 'UNSPECIFIED', AND THE FACTORS OF WHICH MUST BE REVERSED.
@@ -70,3 +71,4 @@ head(datos_onu['tipo_tenencia'])
 datos_onu = datos_onu %>% mutate(tipo_tenencia = recode(tipo_tenencia, '1'=6,'2'=5,'3'=4,'4'=3,'5'=2, '666'=1))
 head(datos_onu['tipo_tenencia'])
 
+write.csv(datos_onu, "formatted-data/datos_onu.csv")
