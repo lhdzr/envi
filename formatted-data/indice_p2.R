@@ -1,4 +1,4 @@
-#rm(list=ls())
+rm(list=ls())
 library(tidyverse)
 library(p2distance)
 library(stratification)
@@ -7,7 +7,8 @@ library(beepr)
 
 
 
-# Access to infraestructure and services-----------------------------------------------------------------------
+# Access to services  ----------------------------------
+#Open data, with variables regarding access to services
 indicadores <- read_csv("datos_onu.csv") %>%
   select(vid,
          P4_12,
@@ -16,28 +17,31 @@ indicadores <- read_csv("datos_onu.csv") %>%
          P4_16,
          P4_17)
 
-table(indicadores$P4_14)
-indicadores_na <- na.omit(indicadores)
+#For p2distance, a minimum is needed. This is; the worst case scenario for
+#every variable. The values were modified in every case in order to make
+#number 1 this scenario
 minimos <- rep(1,5)
 
+#Creation of p2distance index
 indice <- p2distance(matriz = as.matrix(indicadores[,2:6]),
                      reference_vector = minimos,
                      iterations = 50)
+resultados <- cbind(indicadores,indice[["p2distance"]])
 
-resultados <- cbind(indicadores_na,indice[["p2distance"]])
 
-
-strata.DH_2020 <- strata.cumrootf(resultados[,7],
+#After obtaining p2 values, strata is created in order to divide the values
+#into different groups
+estratos <- strata.cumrootf(resultados[,7],
                                   n = length(resultados$p2distance.2),
                                   Ls = 5)
 
 
-assign(paste0("resultados"), data.frame(resultados, strata.DH_2020[["stratumID"]])) 
+assign(paste0("resultados"), data.frame(resultados, estratos[["stratumID"]])) 
 
 
 
 
-# Se cambian los levels del grado de marginación  
+#Levels are created, from "Very low" to "Very high" 
 for(i in 1){
   niveles = get(paste0("resultados")) 
   levels(niveles[,8]) = c("Muy baja", "Baja","Media","Alta","Muy Alta")
@@ -45,10 +49,13 @@ for(i in 1){
   rm(niveles)
 }
 
-write.csv(resultados, file = "p2_2.csv")
+write.csv(resultados, file = "p2_servicios.csv")
 
+#Check Density
+plot(density(resultados$p2distance.2))
 
-# 4 -----------------------------------------------------------------------
+#SAME PROCESS IS REPEATED FOR EVERY INDEX BELOW
+# Habitability -----------------------------------------------------------------------
 rm(list=ls())
 indicadores <- read_csv("datos_onu.csv") %>%
   select(vid,
@@ -83,8 +90,6 @@ assign(paste0("resultados"), data.frame(resultados, strata.DH_2020[["stratumID"]
 
 
 
-
-# Se cambian los levels del grado de marginación  
 for(i in 1){
   niveles = get(paste0("resultados")) 
   levels(niveles[,13]) = c("Muy baja", "Baja","Media","Alta","Muy Alta")
@@ -92,10 +97,16 @@ for(i in 1){
   rm(niveles)
 }
 
-write.csv(resultados, file = "p2_4.csv")
+write.csv(resultados, file = "p2_habitabilidad.csv")
+
+#Tabla de cantidades
+table(resultados$strata.DH_2020...stratumID...)
+
+#Densidad
+plot(density(resultados$p2distance))
 
 
-# 5 -----------------------------------------------------------------------
+# Accesibility -----------------------------------------------------------------------
 rm(list=ls())
 indicadores <- read_csv("datos_onu.csv") %>%
   select(vid,
@@ -106,6 +117,7 @@ indicadores <- read_csv("datos_onu.csv") %>%
          P6_9_1)
 
 mean(is.na(indicadores))
+
 
 minimos <- rep(1,5)
 
@@ -125,8 +137,6 @@ assign(paste0("resultados"), data.frame(resultados, estratos[["stratumID"]]))
 
 
 
-
-# Se cambian los levels del grado de marginación  
 for(i in 1){
   niveles = get(paste0("resultados")) 
   levels(niveles[,8]) = c("Muy baja", "Baja","Media","Alta","Muy Alta")
@@ -134,10 +144,16 @@ for(i in 1){
   rm(niveles)
 }
 
-write.csv(resultados, file = "p2_4.csv")
+write.csv(resultados, file = "p2_accesibilidad.csv")
+
+#Tabla de cantidades
+table(resultados$estratos...stratumID...)
+
+#Densidad
+plot(density(resultados$p2distance))
 
 
-# 7 -----------------------------------------------------------------------
+# Location  -----------------------------------------------------------------------
 rm(list=ls())
 indicadores <- read_csv("datos_onu.csv") %>%
   select(vid,
@@ -175,7 +191,7 @@ assign(paste0("resultados"), data.frame(resultados, estratos[["stratumID"]]))
 
 
 
-# Se cambian los levels del grado de marginación  
+
 for(i in 1){
   niveles = get(paste0("resultados")) 
   levels(niveles[,15]) = c("Muy baja", "Baja","Media","Alta","Muy Alta")
@@ -183,8 +199,13 @@ for(i in 1){
   rm(niveles)
 }
 
-write.csv(resultados, file = "p2_4.csv")
+write.csv(resultados, file = "p2_ubicacion.csv")
 
+#Tabla de cantidades
+table(resultados$estratos...stratumID...)
+
+#Densidad
+plot(density(resultados$p2distance))
 
 
 
