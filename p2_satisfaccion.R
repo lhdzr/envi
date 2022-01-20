@@ -38,7 +38,9 @@ for(i in 1){
   rm(niveles)
 }
 
-write_csv(resultados,"p2_satisfaccion")
+#write_csv(resultados,"p2_satisfaccion")
+
+
 
 
 
