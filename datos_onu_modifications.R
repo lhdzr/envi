@@ -1,4 +1,5 @@
-setwd("C:/Users/leonh/Documents/Proyectos Personales/Premio INFONAVIT/Github/envi")
+#setwd("C:/Users/leonh/Documents/Proyectos Personales/Premio INFONAVIT/Github/envi")
+
 library(tidyverse)
 library(dplyr)
 datos_onu = read.csv("formatted-data/datos_onu.csv")
@@ -17,7 +18,7 @@ datos_onu[V2R] = lapply(datos_onu[V2R], factor)
 str(datos_onu)
 
 
-# ELEMENTS WITH OPTIONS SÍ, NO, NO SABE (YES, NO, DOESN'T KNOW) CHOSEN. 
+# ELEMENTS WITH OPTIONS S?, NO, NO SABE (YES, NO, DOESN'T KNOW) CHOSEN. 
 SNNS = names(datos_onu[,substr(names(datos_onu), 1,4) == 'P4_7' | substr(names(datos_onu), 1,4) == 'P4_8'])
 head(datos_onu[SNNS])
 # REFACTOR VARIABLES SO THAT NO = 1, DOESN'T KNOW = 2, YES = 3.
@@ -42,7 +43,12 @@ head(datos_onu[E3F])
 # ELEMENT WITH 5 CHOICES, THE FACTORS OF WHICH MUST BE REVERSED.
 head(datos_onu['P4_14'])
 # REVERSE FACTORS
-datos_onu = datos_onu %>% mutate(P4_14 = recode(P4_14, '1'=5,'2'=4,'3'=3,'4'=2,'5'=1))
+datos_onu = datos_onu %>% mutate(P4_14 = recode(P4_14, '5'=1,'4'=2,'3'=3,'2'=4,'1'=5)) #volver a ponerlos como estaban
+head(datos_onu['P4_14'])
+
+datos_onu[is.na(datos_onu)] <- 1 #quitar NA
+
+datos_onu = datos_onu %>% mutate(P4_14 = recode(P4_14, '1'=6,'2'=5,'3'=4,'4'=3,'5'=2,'1'=1)) 
 head(datos_onu['P4_14'])
 
 # ELEMENTS WITH 5 CHOICES, ONE OF WHICH IS 'UNSPECIFIED', AND THE FACTORS OF WHICH MUST BE REVERSED.
@@ -70,3 +76,5 @@ head(datos_onu['tipo_tenencia'])
 datos_onu = datos_onu %>% mutate(tipo_tenencia = recode(tipo_tenencia, '1'=6,'2'=5,'3'=4,'4'=3,'5'=2, '666'=1))
 head(datos_onu['tipo_tenencia'])
 
+
+write.csv(datos_onu, file="datos_onu2.csv")
