@@ -1,7 +1,7 @@
 #INDICES OBJETIVOS DE CALIDAD DE LA VIVIENDA
 library(dplyr)
 library(psych)
-
+#Buscar paquete de survey que acepte select
 
 
 datos_onu <- read.csv("datos_onu2.csv")
@@ -14,11 +14,10 @@ svy_datos_onu <- svydesign(ids = ~UPM_DIS, strata = ~EST_DIS,
 
 
 # Variables a utilizar por indice caracteristica de la ONU
-
+#Hacer el survey despues de sacar e data frame
 
 servicios <- datos_onu %>%
   select("P4_12", "P4_14", "P4_15", "P4_16", "P4_17")
-    #“P4_12”, “P4_14”, “P4_15”, “P4_16”, “P4_17”)
   #select("Sanitario_conectado_a_drenaje","Como_consigue_agua", "A_donde_conecta_el_drenaje","Luz_electrica", "Combustible_para_cocinar", "Llaves_y_mangueras_en_casa") 
 
 
@@ -73,14 +72,14 @@ det(S) #No es muy cercano a cero
 #3. Prueba de contraste de esfericidad de Bartlett
 cortest.bartlett(S,n= 55147) #p-value < 0.05
 
-#Analisis de suficiencia general o índice Kaiser-Meyer-Olkin
+#Analisis de suficiencia general o Indice Kaiser-Meyer-Olkin
   #|Criterio        |Evaluación |
  # |----------------|-----------|
-  #|MSA ≥ 0.9       |Excelente  |
- # |0.8 ≤ MSA < 0.9 |Bueno      |
-  #|0.7 ≤ MSA < 0.8 |Aceptable  |
-  #|0.6 ≤ MSA < 0.7 |Regular    | <-----
-  #|0.5 ≤ MSA < 0.6 |Bajo       |
+  #|MSA > 0.9       |Excelente  |
+ # |0.8 < MSA < 0.9 |Bueno      |
+  #|0.7 < MSA < 0.8 |Aceptable  |
+  #|0.6 < MSA < 0.7 |Regular    | <-----
+  #|0.5 < MSA < 0.6 |Bajo       |
   #|MSA < 0.5       |Inaceptable|
 
 KMO(S) #Overall MSA= 0.74 (REGULAR). Todos > 0.5 no hay que borrar variables
@@ -105,7 +104,7 @@ print(modeloS2$loadings,cut=0.5, sort=TRUE) #SOLO P4_16 QUEDA EN COMPONENTE 2 Y 
 fa.diagram(modeloS2)
 
 
-#oBTENCIÓN DE PUNTAJES
+#OBTENCION DE PUNTAJES
 modeloS2<-principal(DzS,nfactors = 2, rotate="varimax",
                     scores=TRUE,method="regression") #con el método que queramos calcular los puntajes
 
@@ -118,7 +117,7 @@ modeloS2$weights
 alpha(DzS[,c(1,2,3,4,5)],check.keys=TRUE)
 
 
-#Poner el índice de 0 a 100
+#Poner el Indice de 0 a 100
 DzS$Indice1<-with(DzS,100*(PC1-min(PC1))/(max(PC1)-min(PC1))) #Componente 1
 DzS$Indice2<-with(DzS,100*(PC2-min(PC2))/(max(PC2)-min(PC2))) #Componente 2
 
@@ -136,7 +135,7 @@ w1S=0.45/(0.45+0.20)
 w2S=0.20/(0.20+0.45)
 
 
-DzS$IndiceSERVICIOS<-with(DzS,w1S*Indice1+w2S*Indice2) #ponderando los dos índices, nuestro final se llama columna ÍndiceSERVICIOS
+DzS$IndiceSERVICIOS<-with(DzS,w1S*Indice1+w2S*Indice2) #ponderando los dos Indices, nuestro final se llama columna ÍndiceSERVICIOS
 
 write.csv(DzS, file="IndiceSERVICIOS.csv")
 
@@ -166,7 +165,7 @@ det(H) #No es muy cercano a cero
 #3. Prueba de contraste de esfericidad de Bartlett
 cortest.bartlett(H,n= 55147) #p-value < 0.05
 
-#Analisis de suficiencia general o índice Kaiser-Meyer-Olkin
+#Analisis de suficiencia general o Indice Kaiser-Meyer-Olkin
 
 KMO(H) #Overall MSA= 0.78 (REGULAR). Todos > 0.5 no hay que borrar variables
 
@@ -195,7 +194,7 @@ modeloH2<-principal(DzH,nfactors = 3, rotate="varimax")
 modeloH2
 
 
-#OBTENCIÓN DE PUNTAJES
+#OBTENCION DE PUNTAJES
 modeloH2<-principal(DzH,nfactors = 3, rotate="varimax",
                     scores=TRUE,method="regression") #con el método que queramos calcular los puntajes
 
@@ -211,7 +210,7 @@ alpha(DzH[,c(1:12)],check.keys=TRUE)
 fa.diagram(modeloH2)
 
 
-#Poner el índice de 0 a 100
+#Poner el Indice de 0 a 100
 DzH$Indice1<-with(DzH,100*(PC1-min(PC1))/(max(PC1)-min(PC1))) #Componente 1
 DzH$Indice2<-with(DzH,100*(PC2-min(PC2))/(max(PC2)-min(PC2))) #Componente 2
 DzH$Indice3<-with(DzH,100*(PC3-min(PC3))/(max(PC3)-min(PC3))) #Componente 2
@@ -231,7 +230,7 @@ w2H=0.20/(0.20+0.24+0.18)
 w3H=0.18/(0.18+0.20+0.24)
 
 
-DzH$IndiceHABITABILIDAD<-with(DzH,w1H*Indice1+w2H*Indice2+w3H*Indice3) #ponderando los dos índices, nuestro final se llama columna ÍndiceHABITABILIDAD
+DzH$IndiceHABITABILIDAD<-with(DzH,w1H*Indice1+w2H*Indice2+w3H*Indice3) #ponderando los dos Indices, nuestro final se llama columna ÍndiceHABITABILIDAD
 
 write.csv(DzH, file="IndiceHABITABILIDAD.csv")
 
@@ -260,7 +259,7 @@ det(A) #Cercano a cero
 #3. Prueba de contraste de esfericidad de Bartlett
 cortest.bartlett(A,n= 55147) #p-value < 0.05
 
-#Analisis de suficiencia general o índice Kaiser-Meyer-Olkin
+#Analisis de suficiencia general o Indice Kaiser-Meyer-Olkin
 
 KMO(A) #Overall MSA= 0.86 (BUENO). Todos > 0.5 no hay que borrar variables
 
@@ -279,7 +278,7 @@ modeloA2<-principal(DzA,nfactors = 2, rotate="varimax")
 modeloA2
 
 #cARGAS POR COMPONENTE
-print(modeloA2$loadings,cut=0.5, sort=TRUE) #Solo P6_9_1 Se queda fuera (no está correlacionado Y ESTÁ NEGATIVA)
+print(modeloA2$loadings,cut=0.5, sort=TRUE) #Solo P6_9_1 Se queda fuera (no esta correlacionado Y ESTA NEGATIVA)
 fa.diagram(modeloA2) 
 
 #Reescalar variable de Problemas de la vivienda (negativa)
@@ -288,7 +287,7 @@ modeloA2<-principal(DzA,nfactors = 2, rotate="varimax")
 modeloA2
 
 
-#OBTENCIÓN DE PUNTAJES
+#OBTENCION DE PUNTAJES
 modeloA2<-principal(DzA,nfactors = 2, rotate="varimax",
                     scores=TRUE,method="regression") #con el método que queramos calcular los puntajes
 
@@ -304,7 +303,7 @@ alpha(DzA[,c(1:5)],check.keys=TRUE)
 fa.diagram(modeloA2)
 
 
-#Poner el índice de 0 a 100
+#Poner el Indice de 0 a 100
 DzA$Indice1<-with(DzA,100*(PC1-min(PC1))/(max(PC1)-min(PC1))) #Componente 1
 DzA$Indice2<-with(DzA,100*(PC2-min(PC2))/(max(PC2)-min(PC2))) #Componente 2
 
@@ -323,7 +322,7 @@ w1A=0.62/(0.62+0.28)
 w2A=0.28/(0.28+0.62)
 
 
-DzA$IndiceACCESIBILIDAD<-with(DzA,w1A*Indice1+w2A*Indice2) #ponderando los dos índices, nuestro final se llama columna ÍndiceACCESIBILIDAD
+DzA$IndiceACCESIBILIDAD<-with(DzA,w1A*Indice1+w2A*Indice2) #ponderando los dos Indices, nuestro final se llama columna ÍndiceACCESIBILIDAD
 
 write.csv(DzA, file="IndiceACCESIBILIDAD.csv")
 
@@ -353,7 +352,7 @@ det(U) #Cercano a cero
 #3. Prueba de contraste de esfericidad de Bartlett
 cortest.bartlett(U,n= 55147) #p-value < 0.05
 
-#Analisis de suficiencia general o índice Kaiser-Meyer-Olkin
+#Analisis de suficiencia general o Indice Kaiser-Meyer-Olkin
 
 KMO(U) #Overall MSA= 0.82 (BUENO). Todos > 0.5 no hay que borrar variables
 
@@ -377,7 +376,7 @@ fa.diagram(modeloU2)
 
 
 
-#OBTENCIÓN DE PUNTAJES
+#OBTENCION DE PUNTAJES
 modeloU2<-principal(DzU,nfactors = 4, rotate="varimax",
                     scores=TRUE,method="regression") #con el método que queramos calcular los puntajes
 
@@ -394,7 +393,7 @@ modeloU2$weights
 alpha(DzU[,c(1:12)],check.keys=TRUE)
 
 
-#Poner el índice de 0 a 100
+#Poner el Indice de 0 a 100
 DzU$Indice1<-with(DzU,100*(PC1-min(PC1))/(max(PC1)-min(PC1))) #Componente 1
 DzU$Indice2<-with(DzU,100*(PC2-min(PC2))/(max(PC2)-min(PC2))) #Componente 2
 DzU$Indice3<-with(DzU,100*(PC2-min(PC3))/(max(PC3)-min(PC3))) #Componente 3
@@ -416,6 +415,6 @@ w3U=0.14/(0.21+0.16+0.14+0.13)
 w4U=0.13/(0.21+0.16+0.14+0.13)
 
 
-DzU$IndiceUBICACION<-with(DzU,w1U*Indice1+w2U*Indice2+w3U*Indice3+w4U*Indice4) #ponderando los dos índices, nuestro final se llama columna ÍndiceACCESIBILIDAD
+DzU$IndiceUBICACION<-with(DzU,w1U*Indice1+w2U*Indice2+w3U*Indice3+w4U*Indice4) #ponderando los dos Indices, nuestro final se llama columna ÍndiceACCESIBILIDAD
 
 write.csv(DzU, file="IndiceUBICACION.csv")
