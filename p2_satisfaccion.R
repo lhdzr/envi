@@ -12,7 +12,7 @@ min <- rep(1,11)
 
 
 #Create p2distance
-satis_p2 <- p2distance(matriz = as.matrix(satis[,6:16]),
+satis_p2 <- p2distance(matriz = as.matrix(indicadores[,6:16]),
                        reference_vector = min,
                        iterations = 50)
 
@@ -38,7 +38,7 @@ for(i in 1){
   rm(niveles)
 }
 
-#write_csv(resultados,"p2_satisfaccion")
+#write_csv(resultados,"p2_satisfaccion.csv")
 
 
 
