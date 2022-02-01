@@ -76,6 +76,5 @@ head(datos_onu['tipo_tenencia'])
 
 
 
-write.csv(datos_onu, file="datos_onu2.csv")
-#write.csv(datos_onu, "formatted-data/datos_onu.csv")
+write.csv(datos_onu, "formatted-data/datos_onu.csv")
 
