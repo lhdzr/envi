@@ -1,6 +1,7 @@
 library(tidyverse)
 library(readr)
 tvivienda <- read_csv("formatted-data/tvivienda.csv")
+tsdem <- read_csv("formatted-data/tsdem.csv")
 
 a = tvivienda%>%
   select(c(P5_1,P5_4, P5_6_1,P5_7))
@@ -173,6 +174,7 @@ in_ga = full_join(in_ga, tvivienda1, by = "vid")
 # Recode to NA
 in_ga$ingmens_tot = ifelse(in_ga$ingmens_tot == 0 , NA,
                            in_ga$ingmens_tot)
+# Cambiar a NA las viviendas que tienen ingreso 0 porque luego genera 0 en las proporciones del gasto.
 
 
 # Get expensing ratio of household
@@ -254,13 +256,12 @@ datos$P4_15 = ifelse(is.na(datos$P4_15), 666,
                      datos$P4_15)
 
 #Add affordability index to data frame
-datos = inner_join(datos, prop[, c("vid", "indice_aseq")], by = "vid")
-
+datos = inner_join(datos, prop, by = "vid")
 
 # This data frame have only the columns that are included in the index 
 # 
-write.csv(datos, "datos_onu.csv")
-
+#write.csv(datos, "datos_onu.csv")
+write.csv(datos,"formatted-data/datos_onu.csv", row.names = FALSE)
 # A este data frame hay que agregar el asequibilidad en proporciones, hacer cuantiles 
 
 ##------------------------------------------------------------------------------
