@@ -1,5 +1,7 @@
 library(readr)
-data_viv <- read_csv("formatted-data/tvivienda_changes.csv")
+data_viv <- read_csv("tvivienda_changes.csv")
+
+## Hacer variables de rangos para antiguedad de vivienda##----
 
 # Convertir a NA en la base original 
 data_viv$P4_19_2 = ifelse(data_viv$P4_19_2 == 9, NA, 
@@ -35,35 +37,64 @@ table(D$antiguedad_fin)
 sum(is.na(D$antiguedad_fin))
 
 data_viv = cbind(data_viv, D$antiguedad_fin)
+
 data_viv = rename(data_viv,
                   rango_anti = `D$antiguedad_fin` )
 
-setwd("C://Users//alexa//Documents//Reto Infonavit//envi/formatted-data")
-write.csv(data_viv, "tvivienda_changes.csv")
 
+### Agrupar cuantiles de cantidad de cuartos para dormir ###----
+quantile(data_viv$P4_10)
 
+q_cuarto <- ifelse(data_viv$P4_10 >=4, 4 ,
+                     data_viv$P4_10)
 
+data_viv = cbind(data_viv, q_cuartos)
 
+##Agrupar cuantiles de cantidad de cuartos totales en el hogar ##----
+quantile(data_viv$P4_10A)
 
-library("git2rdata")
+q_cuartost <- ifelse(data_viv$P4_10A <= 3, 1,
+                ifelse(data_viv$P4_10A == 4, 2,
+                       ifelse(data_viv$P4_10A == 5, 3,
+                              ifelse(data_viv$P4_10A >= 6, 4,
+                              data_viv$P4_10A))))
+data_viv = cbind(data_viv, q_cuartost)
 
-root <- "~ Reto Infonavit" 
-write_vc(data_viv, file = "formatted-data/tvivienda_changes.csv", root = root)
+sum(is.na(data_viv$P4_13))
+table(data_viv$P4_13)
 
-read_vc(file = "formatted-data/tvivienda_changes.csv", root = root)
-root <- git2r::repository("~/my_git_repo") # git repository
+## Agrupar area de viviendas ##----
 
+# Convertir a NA en la base original 
+data_viv$P4_20_1 = ifelse(data_viv$P4_20_1 == 998, NA,
+                          ifelse(data_viv$P4_20_1  == 999, NA,
+                                 data_viv$P4_20_1))
 
-write.csv(data_viv, "tvivienda_changes.csv")
+data_viv$P4_20_2 = ifelse(data_viv$P4_20_2 == 99, NA,
+                          data_viv$P4_20_2)
 
+ran_area <- ifelse(data_viv$P4_20_1<= 60, 1,
+                   ifelse(data_viv$P4_20_1 > 60 & data_viv$P4_20_1 <=90 , 2,
+                          ifelse(data_viv$P4_20_1 > 90 & data_viv$P4_20_1 <= 120, 3,
+                                 ifelse(data_viv$P4_20_1 > 120 & data_viv$P4_20_1 <=160, 4,
+                                        ifelse(data_viv$P4_20_1 > 160 & data_viv$P4_20_1 <=200, 5,
+                                               ifelse(data_viv$P4_20_1 > 200 & data_viv$P4_20_1 <= 250,6,
+                                                      ifelse(data_viv$P4_20_1 >250 & data_viv$P4_20_1 <= 300, 7,
+                                                             ifelse(data_viv$P4_20_1 > 300 & data_viv$P4_20_1 <= 500,8,
+                                                                    ifelse(data_viv$P4_20_1 > 500, 9,
+                                                                           data_viv$P4_20_1)))))))))
+df = as.data.frame(cbind(data_viv$P4_20_2, ran_area))
+df = df %>%
+  rowwise()%>%
+  mutate(rango_area = sum(c(V1, ran_area),na.rm = T))
 
+df$rango_area = replace(df$rango_area,df$rango_area == 0, NA)
 
+data_viv <- cbind(data_viv, df$rango_area)
 
+##
 
-
-ggplot( mapping = aes(x = p2_hab$p2distance.3, y = data_viv$rango_anti)) +
-  geom_point()
-
-
+sum(is.na(data_viv$P5_15_1))
+table(data_viv$P5_15_1)
 
 
