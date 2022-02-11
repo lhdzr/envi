@@ -1,6 +1,7 @@
 library(readr)
 data_viv <- read_csv("tvivienda_changes.csv")
 
+
 ## Hacer variables de rangos para antiguedad de vivienda##----
 
 # Convertir a NA en la base original 

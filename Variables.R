@@ -199,7 +199,8 @@ prop$indice_aseq = ifelse(is.na(prop$indice_aseq), 666,
                           prop$indice_aseq)
 
 
-
+# Save affordability index 
+write.csv(prop,"KPI/indice_asequibilidad.csv")
 # Select final variables
 
 datos = tvivienda[, c(
