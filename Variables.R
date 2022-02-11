@@ -1,6 +1,14 @@
 library(tidyverse)
-tvivienda = read.csv("tvivienda.csv")
-tsdem = read.csv("tsdem.csv")
+library(readr)
+tvivienda <- read_csv("formatted-data/tvivienda.csv")
+
+a = tvivienda%>%
+  select(c(P5_1,P5_4, P5_6_1,P5_7))
+  
+
+
+
+#tsdem = read.csv("tsdem.csv")
 
 # Overcrowding variable
 tvivienda$hacinamiento = tvivienda$P1_1 / tvivienda$P4_10
@@ -33,14 +41,10 @@ tvivienda$problemas_vivienda = apply(p_est, 1, sum)
 # Create variable with recode sequence
 tvivienda$tipo_tenencia = ifelse(tvivienda$P5_1 == 1, 3,
                                  ifelse(tvivienda$P5_1 == 2, 4,
-                                        ifelse(
-                                          tvivienda$P5_1 == 3, 4,
+                                        ifelse(tvivienda$P5_1 == 3, 4,
                                           ifelse(tvivienda$P5_1 == 4, 2,
-                                                 ifelse(
-                                                   tvivienda$P5_1 == 5, 1,
-                                                   ifelse(
-                                                     tvivienda$P5_1 == 6,
-                                                     5,
+                                                 ifelse(tvivienda$P5_1 == 5, 1,
+                                                   ifelse(tvivienda$P5_1 == 6,5,
                                                      ifelse(tvivienda$P5_1 == 7, 666,
                                                             tvivienda$P5_1)
                                                    )
@@ -252,8 +256,14 @@ datos$P4_15 = ifelse(is.na(datos$P4_15), 666,
 #Add affordability index to data frame
 datos = inner_join(datos, prop[, c("vid", "indice_aseq")], by = "vid")
 
+
+# This data frame have only the columns that are included in the index 
+# 
 write.csv(datos, "datos_onu.csv")
 
+# A este data frame hay que agregar el asequibilidad en proporciones, hacer cuantiles 
+
+##------------------------------------------------------------------------------
 # Select satisfaction variables
 datos_satisfaccion = tvivienda[, c(
   "P6_3_1",
