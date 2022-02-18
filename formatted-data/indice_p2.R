@@ -1,4 +1,4 @@
-rm(list=ls())
+#rm(list=ls())
 library(tidyverse)
 library(p2distance)
 library(stratification)
@@ -26,11 +26,14 @@ minimos <- rep(1,5)
 indice <- p2distance(matriz = as.matrix(indicadores[,2:6]),
                      reference_vector = minimos,
                      iterations = 50)
+
 resultados <- cbind(indicadores,indice[["p2distance"]])
 
 
 #After obtaining p2 values, strata is created in order to divide the values
 #into different groups
+
+
 estratos <- strata.cumrootf(resultados[,7],
                                   n = length(resultados$p2distance.2),
                                   Ls = 5)
@@ -57,6 +60,7 @@ plot(density(resultados$p2distance.2))
 #SAME PROCESS IS REPEATED FOR EVERY INDEX BELOW
 # Habitability -----------------------------------------------------------------------
 rm(list=ls())
+
 indicadores <- read_csv("datos_onu.csv") %>%
   select(vid,
          P4_4,
