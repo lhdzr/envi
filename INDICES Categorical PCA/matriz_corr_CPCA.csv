@@ -1,0 +1,7 @@
+"","X.1","X","indice_habitabilidad","indice_accesibilidad","indice_servicios","indice_ubicacion"
+"X.1",1,1,-0.03,0,-0.02,0.08
+"X",1,1,-0.03,0,-0.02,0.08
+"indice_habitabilidad",-0.03,-0.03,1,-0.06,0.2,-0.29
+"indice_accesibilidad",0,0,-0.06,1,0,0.03
+"indice_servicios",-0.02,-0.02,0.2,0,1,-0.1
+"indice_ubicacion",0.08,0.08,-0.29,0.03,-0.1,1
