@@ -50,10 +50,10 @@ datos_onu = datos_onu %>% mutate(P4_14 = recode(P4_14, '1'=6,'2'=5,'3'=4,'4'=3,'
 head(datos_onu['P4_14'])
 
 # ELEMENTS WITH 5 CHOICES, ONE OF WHICH IS 'UNSPECIFIED', AND THE FACTORS OF WHICH MUST BE REVERSED.
-E5FU = c(names(datos_onu[, substr(names(datos_onu), 1,4) == 'P6_5']), "P6_6")
+E5FU = c(names(datos_onu[, substr(names(datos_onu), 1,4) == 'P6_5' | substr(names(datos_onu), 1,4) == 'P6_9']), "P6_6")
 head(datos_onu[E5FU])
 # REFACTOR VARIABLES SO THAT NOTHING = 1, LITTLE = 2, SOME = 3, VERY = 4, UNSPECIFIED = 9.
-datos_onu = datos_onu %>% mutate_at(c(E5FU), funs(recode(., '1'=4,'2'=3,'3'=2,'4'=1, '9'=9)))
+datos_onu = datos_onu %>% mutate_at(c(E5FU), funs(recode(., '1'=4,'2'=3,'3'=2,'4'=1, '9'=2.5)))
 head(datos_onu[E5FU])
 
 # ELEMENT WITH 6 CHOICES, ONE OF WHICH IS 'UNSPECIFIED', AND THE FACTORS OF WHICH MUST BE REVERSED.
