@@ -31,9 +31,14 @@ p_est = tvivienda[, c("P4_25_1",
                       "P4_25_5",
                       "P4_25_6",
                       "P4_25_7")]
+
+
 # Change 2 to 0 and 9 to 1.5
-p_est[p_est == 2] <-  0
-p_est[p_est == 9] <-  1.5
+p_est[p_est == 2] <-  0 # 2 means NO problems
+p_est[p_est == 9] <-  0.5 # 9 means they don't know
+
+# Some variables have only 1.5 it means that they don't know
+
 
 # Sum problems by household
 tvivienda$problemas_vivienda = apply(p_est, 1, sum)
@@ -266,26 +271,6 @@ write.csv(datos,"formatted-data/datos_onu.csv", row.names = FALSE)
 # A este data frame hay que agregar el asequibilidad en proporciones, hacer cuantiles 
 
 ##------------------------------------------------------------------------------
-# Select satisfaction variables
-datos_satisfaccion = tvivienda[, c(
-  "P6_3_1",
-  "P6_3_2",
-  "P6_3_3",
-  "P6_3_4",
-  "P6_3_5",
-  "P6_3_6",
-  "P6_4_1",
-  "P6_4_2",
-  "P6_4_3",
-  "P6_4_4",
-  "P6_4_5",
-  "P6_4_6"
-)]
-# Recode NA
-datos_satisfaccion[is.na(datos_satisfaccion)] <-  8
-
-
-write.csv(datos_satisfaccion, "datos_satisfaccion.csv")
 
 
 

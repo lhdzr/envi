@@ -152,3 +152,108 @@ escolaridad = tsdem %>%
 data_viv = cbind(data_viv, escolaridad$esc_prom)
 
 write.csv(data_viv, "tvivienda_changes1.csv")
+
+
+
+
+# Cruces de los indices ----------------------------------------------------------------------------------
+# Indice de PCA 
+
+library(readr)
+library(tidyverse)
+PCA <- read_csv("INDICES Categorical PCA/IndicesCATPCA_Estratificados.csv")%>%
+  rename(strarum_hab = strata.CATPCAHab...stratumID...,
+         stratum_ser = strata.CATPCASer...stratumID...,
+         stratum_ubi = strata.CATPCAUb...stratumID...,
+         stratum_acc = strata.CATPCAAcc...stratumID...)
+PCA$strarum_hab = as.factor(PCA$strarum_hab)
+levels(PCA$strarum_hab)
+# Queremos encontar los estados y las viviendas que estan mal en servicios y mal en habitabilidad
+levels(PCA$strarum_hab)
+
+# Vivienda que estan mal en habitabilidad y en servicios 
+sostenibilidad <- PCA%>%
+  select(vid,strarum_hab,stratum_ser)%>%
+  filter(strarum_hab %in% c("Baja", "Muy baja"),
+         stratum_ser %in% c("Baja", "Muy baja"))
+
+# Leer archivo de la encuesta 
+tvivienda <- read_csv("formatted-data/tvivienda_changes1.csv")
+names(tvivienda)
+
+
+write.csv(tvivienda, "formatted-data/tvivienda_changes.csv")
+viviendas_sos = tvivienda%>%
+  filter(tvivienda$vid %in% sostenibilidad$vid)
+
+viviendas_sos = viviendas_sos%>%
+  group_by(Entidades)%>%
+  summarise(n = sum(ENT))
+  
+# Modelo P2 ----------------------------------------------------------------------------------------
+p2_habitabilidad <- read_csv("formatted-data/p2_habitabilidad.csv")%>%
+  rename(starum_habp2 = strata.DH_2020...stratumID...)
+names(p2_servicios)
+
+p2_servicios <- read_csv("formatted-data/p2_servicios.csv")%>%
+  rename(stratum_serp2 = estratos...stratumID...)
+
+datos = cbind(p2_habitabilidad,p2_servicios)
+names(datos)
+datos$vid <- NULL
+# Vivienda que estan mal en habitabilidad y en servicios 
+sostenibilidadP2 <- datos%>%
+  select(vid,starum_habp2,stratum_serp2,)%>%
+  filter(starum_habp2 %in% c("Baja", "Muy baja"),
+         stratum_serp2 %in% c("Baja", "Muy baja"))
+
+
+vivsos_p2 = tvivienda%>%
+  filter(tvivienda$vid %in% sostenibilidadP2$vid)
+
+vivsos_p2 = vivsos_p2%>%
+  group_by(Entidades)%>%
+  summarise(n = sum(ENT))
+
+
+
+
+
+
+
+
+###--------------------------------------------------------------------------------------------------------
+tvivienda$Entidades = ifelse(tvivienda$ENT == 1, "Aguascalientes",
+                             ifelse(tvivienda$ENT == 2 , "Baja Califonornia",
+                                    ifelse(tvivienda$ENT == 3, "Baja Califonornia Sur",
+                                           ifelse(tvivienda$ENT == 4, "Campeche",
+                                                  ifelse(tvivienda$ENT == 5, "Coahuila",
+                                                         ifelse(tvivienda$ENT == 6, "Colima",
+                                                                ifelse(tvivienda$ENT == 7 , "Chiapas",
+                                                                       ifelse(tvivienda$ENT == 8, "Chihuahua",
+                                                                              ifelse(tvivienda$ENT == 9 , "CDMX",
+                                                                                     ifelse(tvivienda$ENT == 10,"Durango",
+                                                                                            ifelse(tvivienda$ENT == 11, "Guanajuato",
+                                                                                                   ifelse(tvivienda$ENT == 12, "Guerrero",
+                                                                                                          ifelse(tvivienda$ENT == 13, "Hidalgo",
+                                                                                                                 ifelse(tvivienda$ENT == 14, "Jalisco",
+                                                                                                                        ifelse(tvivienda$ENT == 15, "Mexico",
+                                                                                                                               ifelse(tvivienda$ENT == 16, "Michoacan",
+                                                                                                                                      ifelse(tvivienda$ENT == 17, "Morelos",
+                                                                                                                                             ifelse(tvivienda$ENT == 18 , "Nayarit",
+                                                                                                                                                    ifelse(tvivienda$ENT == 19, "Nuevo León",
+                                                                                                                                                           ifelse(tvivienda$ENT == 20, "Oaxaca",
+                                                                                                                                                                  ifelse(tvivienda$ENT == 21, "Puebla",
+                                                                                                                                                                         ifelse(tvivienda$ENT==22, "Queretaro",
+                                                                                                                                                                                ifelse(tvivienda$ENT == 23, "Quintana Roo",
+                                                                                                                                                                                       ifelse(tvivienda$ENT == 24, "San Luis",
+                                                                                                                                                                                              ifelse(tvivienda$ENT == 25, "Sinaloa",
+                                                                                                                                                                                                     ifelse(tvivienda$ENT == 26 , "Sonora",
+                                                                                                                                                                                                            ifelse(tvivienda$ENT == 27, "Tabasco",
+                                                                                                                                                                                                                   ifelse(tvivienda$ENT == 28 , "Tamaulipas",
+                                                                                                                                                                                                                          ifelse(tvivienda$ENT == 29, "Tlaxcala",
+                                                                                                                                                                                                                                 ifelse(tvivienda$ENT == 30 , "Veracruz",
+                                                                                                                                                                                                                                        ifelse(tvivienda$ENT == 31, "Yucatan",
+                                                                                                                                                                                                                                               ifelse(tvivienda$ENT ==32, "Zacatecas",
+                                                                                                                                                                                                                                                      tvivienda$ENT))))))))))))))))))))))))))))))))
+#write.csv(tvivienda, "formatted-data/tvivienda_changes.csv")
