@@ -1,7 +1,10 @@
-setwd("/Users/andreasb/Desktop/TEC/INFONAVIT/Code ")
-datos_onu = read.csv("satisfaction_data.csv")
+#setwd("/Users/andreasb/Desktop/TEC/INFONAVIT/Code ")
+#datos_onu = read.csv("satisfaction_data.csv")
+
 library(tidyverse)
 library(dplyr)
+library(readr)
+datos_onu <- read_csv("satisfaction_data.csv")
 datos_onu
 
 
@@ -30,6 +33,6 @@ head (datos_onu['P6_4_4'])
 datos_onu = datos_onu %>% mutate( P6_4_5 = recode( P6_4_5, '1'=5,'2'=4,'3'=3,'4'=2,'5'=1))
 head (datos_onu['P6_4_5'])
 
-write.csv(datos_onu, file="satisfaction2.csv")
+write.csv(datos_onu, file="satisfaction_data_recode.csv")
 
 

@@ -65,7 +65,7 @@ head(datos_onu['P4_15'])
 # ELEMENT WITH 6 CHOICES, ONE OF WHICH IS 'UNSPECIFIED', TWO OF WHICH CANNOT BE PROPERLY RANKED, AND THE FACTORS OF WHICH MUST BE REVERSED.
 head(datos_onu['P4_17'])
 # REFACTOR VARIABLES SO THAT OTHER FUEL = 1, DON'T COOK = 2, COAL OR LUMBER = 3, GAS OR ELECTRICITY = 4, UNSPECIFIED = 9.
-datos_onu = datos_onu %>% mutate(P4_17 = recode(P4_17, '1'=4,'2'=3,'3'=4,'4'=1,'5'=2, '9'=9))
+datos_onu = datos_onu %>% mutate(P4_17 = recode(P4_17, '1'=4,'2'=3,'3'=4,'4'=1,'5'=2, '9'=2.5))
 head(datos_onu['P4_17'])
 
 # TYPE OF OWNERSHIP
@@ -75,6 +75,8 @@ datos_onu = datos_onu %>% mutate(tipo_tenencia = recode(tipo_tenencia, '1'=6,'2'
 head(datos_onu['tipo_tenencia'])
 
 
+write.csv(datos_onu, "formatted-data/datos_onu.csv", row.names = FALSE)
 
-write.csv(datos_onu, "formatted-data/datos_onu.csv")
 
+cultural = datos_onu[,c("vid","P6_6")]
+write.csv(cultural,"KPI/indice_cultural.csv", row.names = FALSE)
