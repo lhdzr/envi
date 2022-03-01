@@ -1,9 +1,11 @@
 #Código para cambiar nombre de variables 
 
-setwd("/Users/andreasb/Desktop/INFONAVIT/Rename")
-datos = read.csv("datos_onu.csv")
+#setwd("/Users/andreasb/Desktop/INFONAVIT/Rename")
+#datos = read.csv("datos_onu.csv")
 
 library(dplyr)
+library(readr)
+datos <- read_csv("formatted-data/datos_onu.csv")
 
 #Datos ONU 
 newdata = datos %>% rename(
@@ -46,14 +48,14 @@ newdata = datos %>% rename(
 View(newdata)
 
 
-write.csv(newdata, file = "datos_onu_names.csv")
+write.csv(newdata, "formatted-data/datos_onu_names.csv")
 
 #====================================================================
 #Datos Satisfacción 
-setwd("/Users/andreasb/Desktop/INFONAVIT/Rename")
-data1 = read.csv("satisfaction_data_recode.csv")
+
+data1 = read_csv("satisfaction_data_recode.csv")
 View(data1)
-library(dplyr)
+#library(dplyr)
 
 newdf = data1 %>% rename( 
   Satisfaccion_con_pisos = P6_3_1,
@@ -69,7 +71,7 @@ newdf = data1 %>% rename(
   Satisfaccion_con_tamaño_de_patio = P6_4_5)
 
 View(newdf)
-write.csv(newdf, file = "satisfaction_names.csv")
+write.csv(newdf, "satisfaction_names.csv")
 
   
   
