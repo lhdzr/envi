@@ -101,8 +101,10 @@ datos = tvivienda[, c(
 datos$P4_12 = ifelse(is.na(datos$P4_12), 4,
                      datos$P4_12)
 #Change NA to 6. Significa que no tiene agua
+
 datos$P4_14 = ifelse(is.na(datos$P4_14), 6,
                      datos$P4_14)
+
 #Change NA to 666. No sabe 
 datos$P4_15 = ifelse(is.na(datos$P4_15), 666,
                      datos$P4_15)
@@ -113,10 +115,11 @@ datos$P4_15 = ifelse(is.na(datos$P4_15), 666,
 # This data frame have only the columns that are included in the index 
 # 
 #write.csv(datos, "datos_onu.csv")
-write.csv(datos,"formatted-data/datos_onu.csv", row.names = FALSE)
+#write.csv(datos,"formatted-data/datos_onu.csv", row.names = FALSE)
 # A este data frame hay que agregar el asequibilidad en proporciones, hacer cuantiles 
 
-datos_onu = datos 
+datos_onu = datos
+sum(is.na(datos_onu))
 ##------------------------------------------------------------------------------
 # DEFINE VARIABLES TO REFACTOR
 V2R = c(names(datos_onu[,substr(names(datos_onu), 1,4) == 'P4_7' |
@@ -135,8 +138,12 @@ str(datos_onu)
 SNNS = names(datos_onu[,substr(names(datos_onu), 1,4) == 'P4_7' | substr(names(datos_onu), 1,4) == 'P4_8'])
 head(datos_onu[SNNS])
 # REFACTOR VARIABLES SO THAT NO = 1, DOESN'T KNOW = 2, YES = 3.
-datos_onu = datos_onu %>% mutate_at(c(SNNS), funs(recode(., '1'=3,'2'=1,'9'=2)))
+datos_onu = datos_onu %>% 
+  mutate_at(c(SNNS), funs(recode(., '1'=3,'2'=1,'9'=2)))
+
 head(datos_onu[SNNS])
+
+sum(is.na(datos_onu))
 
 # ELEMENTS WITH 2 CHOICES, THE FACTORS OF WHICH MUST BE REVERSED
 E2F = c("P4_16", names(datos_onu[,substr(names(datos_onu), 1,4) == 'P6_7']))
@@ -152,16 +159,18 @@ head(datos_onu[E3F])
 datos_onu = datos_onu %>% mutate(P4_13 = recode(P4_13, '1'=3,'2'=2,'3'=1))
 datos_onu = datos_onu %>% mutate(P4_12 = recode(P4_12, '1'=4,'2'=3,'3'=2,'4'=1))
 head(datos_onu[E3F])
+sum(is.na(datos_onu))
 
 # ELEMENT WITH 5 CHOICES, THE FACTORS OF WHICH MUST BE REVERSED.
 head(datos_onu['P4_14'])
 # REVERSE FACTORS
-datos_onu[is.na(datos_onu)] <- 6 #quitar NA
+#datos_onu[is.na(datos_onu)] <- 6 #quitar NA
 
-datos_onu = datos_onu %>% mutate(P4_14 = recode(P4_14, '1'=6,'2'=5,'3'=4,'4'=3,'5'=2,'1'=1)) 
+datos_onu = datos_onu %>% mutate(P4_14 = recode(P4_14, '1'=6,'2'=5,'3'=4,'4'=3,'5'=2,'6'=1)) 
 
 head(datos_onu['P4_14'])
 
+sum(is.na(datos_onu))
 # ELEMENTS WITH 5 CHOICES, ONE OF WHICH IS 'UNSPECIFIED', AND THE FACTORS OF WHICH MUST BE REVERSED.
 E5FU = c(names(datos_onu[, substr(names(datos_onu), 1,4) == 'P6_5' | substr(names(datos_onu), 1,4) == 'P6_9']), "P6_6")
 head(datos_onu[E5FU])
@@ -169,6 +178,7 @@ head(datos_onu[E5FU])
 datos_onu = datos_onu %>% mutate_at(c(E5FU), funs(recode(., '1'=4,'2'=3,'3'=2,'4'=1, '9'=2.5)))
 head(datos_onu[E5FU])
 
+sum(is.na(datos_onu))
 # ELEMENT WITH 6 CHOICES, ONE OF WHICH IS 'UNSPECIFIED', AND THE FACTORS OF WHICH MUST BE REVERSED.
 head(datos_onu['P4_15'])
 # REFACTOR VARIABLES SO THAT NO SEWAGE = 1, BODY OF WATER = 2, HILL/CRACK = 3, BIODIGESTOR = 4, PUBLIC SEWAGE = 5, UNSPECIFIED = 9.
@@ -181,19 +191,22 @@ head(datos_onu['P4_17'])
 datos_onu = datos_onu %>% mutate(P4_17 = recode(P4_17, '1'=4,'2'=3,'3'=4,'4'=1,'5'=2, '9'=2.5))
 head(datos_onu['P4_17'])
 
+sum(is.na(datos_onu))
+
 # TYPE OF OWNERSHIP
 head(datos_onu['tipo_tenencia'])
 # REVERSE VALUES
 datos_onu = datos_onu %>% mutate(tipo_tenencia = recode(tipo_tenencia, '1'=6,'2'=5,'3'=4,'4'=3,'5'=2, '666'=1))
 head(datos_onu['tipo_tenencia'])
 
+sum(is.na(datos_onu))
 
-write.csv(datos_onu, "formatted-data/datos_onu.csv", row.names = FALSE)
+#write.csv(datos_onu, "formatted-data/datos_onu.csv", row.names = FALSE)
 
 
 cultural = datos_onu[,c("vid","P6_6")]
 
-write.csv(cultural,"KPI/indice_cultural.csv", row.names = FALSE)
+#write.csv(cultural,"KPI/indice_cultural.csv", row.names = FALSE)
 
 
 
