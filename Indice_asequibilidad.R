@@ -226,7 +226,7 @@ prop = ingreso_gasto %>%
   mutate(gas_tot = sum(c_across(mes_info:mes_fa), na.rm = TRUE)) %>%
   mutate(prop_gasto = gas_tot / ingreso_viv)
 
-write_csv(prop, "prop_aseq.csv")
+#write_csv(prop, "prop_aseq.csv")
 
 # Select important variables
 prop = prop[, c("vid", "prop_gasto")]
