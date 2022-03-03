@@ -3,6 +3,8 @@ library(readr)
 tvivienda <- read_csv("formatted-data/tvivienda.csv")
 tsdem <- read_csv("formatted-data/tsdem.csv")
 
+
+
 # Income and expenses variable -----------------------------------------------------------------
 # Select interest variables of data frame
 base1 <-
@@ -34,42 +36,75 @@ base1 <-
 base1[base1 == 9999888] <- NA
 base1[base1 == 9999999] <- NA
 
+# Eliminar valores mayor a 5 millones en las varibles de deuda pendiente 
+#base1$P5_20_1 <- ifelse(base1$P5_20_1 > 2000000,NA,
+#                        base1$P5_20_1)
+
+#base1$P5_20_2 <- ifelse(base1$P5_20_2 > 2000000,NA,
+#                        base1$P5_20_2)
+
+#base1$P5_20_3 <- ifelse(base1$P5_20_3 > 2000000,NA,
+#                        base1$P5_20_3)
+
+#base1$P5_20_4 <- ifelse(base1$P5_20_4 > 2000000,NA,
+#                        base1$P5_20_4)
+
+#base1$P5_20_5 <- ifelse(base1$P5_20_5 > 2000000,NA,
+#                        base1$P5_20_5)
+
+#base1$P5_20_6 <- ifelse(base1$P5_20_6 > 2000000,NA,
+#                        base1$P5_20_6)
+
+
+
 # Eliminar los 88 y 99 y poner NA
-base1$P5_21_1_1 <- ifelse(base1$P5_21_1_1 == 88|base1$P5_21_1_1== 99,NA,
-                          base1$P5_21_1_1)
+base1$P5_21_1_1 <- ifelse(base1$P5_21_1_1 == 88,NA,
+                          ifelse(base1$P5_21_1_1== 99,NA,
+                                 base1$P5_21_1_1))
 
-base1$P5_21_1_2 <- ifelse(base1$P5_21_1_2 == 88|base1$P5_21_1_1== 99,NA,
-                          base1$P5_21_1_2)
+base1$P5_21_1_2 <- ifelse(base1$P5_21_1_2 == 88,NA,
+                          ifelse(base1$P5_21_1_1== 99,NA,
+                          base1$P5_21_1_2))
 
-base1$P5_21_2_1 <- ifelse(base1$P5_21_2_1 == 88|base1$P5_21_1_1== 99,NA,
-                          base1$P5_21_2_1)
+base1$P5_21_2_1 <- ifelse(base1$P5_21_2_1 == 88,NA,
+                          ifelse(base1$P5_21_1_1== 99,NA,
+                          base1$P5_21_2_1))
 
-base1$P5_21_2_2 <- ifelse(base1$P5_21_2_2 == 88|base1$P5_21_1_1== 99,NA,
-                          base1$P5_21_2_2)
+base1$P5_21_2_2 <- ifelse(base1$P5_21_2_2 == 88,NA, 
+                          ifelse(base1$P5_21_1_1== 99,NA,
+                          base1$P5_21_2_2))
 
-base1$P5_21_3_1 <- ifelse(base1$P5_21_3_1 == 88|base1$P5_21_1_1== 99,NA,
-                          base1$P5_21_3_1)
+base1$P5_21_3_1 <- ifelse(base1$P5_21_3_1 == 88,NA,
+                          ifelse(base1$P5_21_1_1== 99,NA,
+                          base1$P5_21_3_1))
 
-base1$P5_21_3_2 <- ifelse(base1$P5_21_3_2 == 88|base1$P5_21_1_1== 99,NA,
-                          base1$P5_21_3_2)
+base1$P5_21_3_2 <- ifelse(base1$P5_21_3_2 == 88,NA,
+                          ifelse(base1$P5_21_1_1== 99,NA,
+                          base1$P5_21_3_2))
 
-base1$P5_21_4_1 <- ifelse(base1$P5_21_4_1 == 88|base1$P5_21_1_1== 99,NA,
-                          base1$P5_21_4_1)
+base1$P5_21_4_1 <- ifelse(base1$P5_21_4_1 == 88,NA, 
+                          ifelse(base1$P5_21_1_1== 99,NA,
+                          base1$P5_21_4_1))
 
-base1$P5_21_4_2 <- ifelse(base1$P5_21_4_2 == 88|base1$P5_21_1_1== 99,NA,
-                          base1$P5_21_4_2)
+base1$P5_21_4_2 <- ifelse(base1$P5_21_4_2 == 88,NA,
+                          ifelse(base1$P5_21_1_1== 99,NA,
+                          base1$P5_21_4_2))
 
-base1$P5_21_5_1 <- ifelse(base1$P5_21_5_1 == 88|base1$P5_21_1_1== 99,NA,
-                          base1$P5_21_5_1)
+base1$P5_21_5_1 <- ifelse(base1$P5_21_5_1 == 88,NA,
+                          ifelse(base1$P5_21_1_1== 99,NA,
+                          base1$P5_21_5_1))
 
-base1$P5_21_5_2 <- ifelse(base1$P5_21_5_2 == 88|base1$P5_21_1_1== 99,NA,
-                          base1$P5_21_5_2)
+base1$P5_21_5_2 <- ifelse(base1$P5_21_5_2 == 88,NA,
+                          ifelse(base1$P5_21_1_1== 99,NA,
+                          base1$P5_21_5_2))
 
-base1$P5_21_6_1 <- ifelse(base1$P5_21_6_1 == 88|base1$P5_21_1_1== 99,NA,
-                          base1$P5_21_6_1)
+base1$P5_21_6_1 <- ifelse(base1$P5_21_6_1 == 88,NA,
+                          ifelse(base1$P5_21_1_1== 99,NA,
+                          base1$P5_21_6_1))
 
-base1$P5_21_6_2 <- ifelse(base1$P5_21_6_2 == 88|base1$P5_21_1_1== 99,NA,
-                          base1$P5_21_6_2)
+base1$P5_21_6_2 <- ifelse(base1$P5_21_6_2 == 88,NA,
+                          ifelse(base1$P5_21_1_1== 99,NA,
+                          base1$P5_21_6_2))
 
 
 
@@ -215,4 +250,4 @@ prop$indice_aseq = ifelse(prop$prop_gasto > 0.30 ,
 
 
 # Save affordability index 
-write.csv(prop,"KPI/indice_asequibilidad.csv")
+#write.csv(prop,"KPI/indice_asequibilidad.csv")
