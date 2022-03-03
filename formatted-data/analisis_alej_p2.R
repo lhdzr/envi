@@ -5,6 +5,7 @@ library(corrplot)
 
 
 codigos <- read_csv("codigos_identidad.csv", col_names = c("ENT", "Estado"))
+
 datos <- read_csv("tvivienda.csv")  %>% 
   left_join(codigos, by = "ENT")
 
@@ -24,6 +25,10 @@ p2_serv <- read_csv("p2_servicios.csv") %>%
 p2_ubi <- read_csv("p2_ubicacion.csv") %>%
   rename(p2_ubi = p2distance.3) %>% 
   rename(estr_ubi = estratos...stratumID...)
+
+
+tenencia <- read_csv("indice_tenencia.csv")
+
 
 
 
@@ -254,6 +259,70 @@ assign(paste0("ind_ten"), data.frame(ind_ten, estrato_ten[["stratumID"]]))
 for(i in 1){
   niveles = get(paste0("ind_ten")) 
   levels(niveles[,13]) = c("Muy baja", "Baja","Media","Alta","Muy Alta")
+  assign(paste0("ind_ten"), niveles)
+  rm(niveles)
+}
+
+ind_ten <- ind_ten %>% 
+  rename(estr_ten = estrato_ten...stratumID...)
+
+
+# Estratificación Cultura -------------------------------------------------
+library(stratification)
+ind_ten <- read_csv("indice_cultural.csv")
+estrato_ten <- strata.cumrootf(ind_ten$P6_6,
+                               n = length(ind_ten$P6_6),
+                               Ls = 2)
+
+#aqui pego los estratos (q se encuentran en strata.DH_2020[[stratumID]])
+#a el data frame de resultados, como una nueva columna
+#observa que los estratos son numericos
+assign(paste0("ind_ten"), data.frame(ind_ten, estrato_ten[["stratumID"]])) 
+
+
+#aqui le pido en orden; que guarde en niveles al df "resultados"
+#Que asigne niveles a la columna 13, del recien creado df niveles
+#Estos niveles (levels) asignados van de 1 a 5, de muy bajo a muy alto,
+#finalmente, junto la columna 13 de niveles con el df resultados y borro niveles
+
+for(i in 1){
+  niveles = get(paste0("ind_ten")) 
+  levels(niveles[,3]) = c("Baja","Alta")
+  assign(paste0("ind_ten"), niveles)
+  rm(niveles)
+}
+
+ind_cultura <- ind_ten %>% 
+  rename(estr_cultura = estrato_ten...stratumID...)
+
+
+
+
+
+# estrato asequibilidad ---------------------------------------------------
+library(stratification)
+ind_ten <- read_csv("indice_asequibilidad.csv") %>% 
+  filter(!is.na(prop_gasto))
+
+estrato_ten <- strata.cumrootf(ind_ten$prop_gasto,
+                               n = length(ind_ten$prop_gasto),
+                               Ls = 5)
+
+
+#aqui pego los estratos (q se encuentran en strata.DH_2020[[stratumID]])
+#a el data frame de resultados, como una nueva columna
+#observa que los estratos son numericos
+assign(paste0("ind_ten"), data.frame(ind_ten, estrato_ten[["stratumID"]])) 
+
+
+#aqui le pido en orden; que guarde en niveles al df "resultados"
+#Que asigne niveles a la columna 13, del recien creado df niveles
+#Estos niveles (levels) asignados van de 1 a 5, de muy bajo a muy alto,
+#finalmente, junto la columna 13 de niveles con el df resultados y borro niveles
+
+for(i in 1){
+  niveles = get(paste0("ind_ten")) 
+  levels(niveles[,5]) = c("Muy baja", "Baja","Media","Alta","Muy Alta")
   assign(paste0("ind_ten"), niveles)
   rm(niveles)
 }

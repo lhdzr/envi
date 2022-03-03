@@ -213,7 +213,6 @@ ing_viv = tsdem %>%
 
 # Join variables of income and expenses
 ingreso_gasto = full_join(ing_viv, gastos_creditos_mes, by = "vid")
-ingreso_gasto = full_join(ingreso_gasto, gastos_viv, by = "vid") 
 
 # Recode to NA
 ingreso_gasto$ingreso_viv = ifelse(ingreso_gasto$ingreso_viv == 0 , NA,
@@ -224,8 +223,10 @@ ingreso_gasto$ingreso_viv = ifelse(ingreso_gasto$ingreso_viv == 0 , NA,
 # Get expensing ratio of household
 prop = ingreso_gasto %>%
   rowwise() %>%
-  mutate(gas_tot = sum(c_across(mes_info:P5_43_4_2), na.rm = TRUE)) %>%
+  mutate(gas_tot = sum(c_across(mes_info:mes_fa), na.rm = TRUE)) %>%
   mutate(prop_gasto = gas_tot / ingreso_viv)
+
+write_csv(prop, "prop_aseq.csv")
 
 # Select important variables
 prop = prop[, c("vid", "prop_gasto")]
