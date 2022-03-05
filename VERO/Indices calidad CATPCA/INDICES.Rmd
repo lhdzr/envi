@@ -25,7 +25,7 @@ library("gmodels") #gráficas
 3) El análisis de suficiencia general o Kaiser-Meyer-Olkin
 
 #Dentro del modelo:
-```{r}
+
 modeloS$evals
 modeloS$quantifications #por categoria
 modeloS$dmeasures
@@ -35,7 +35,6 @@ modeloS$loadings
 modeloS$scoremat
 modeloS$transform
 
-```
 
 #--------
 ```{r}
@@ -375,10 +374,10 @@ Problema_en_su_barrio_con_equipo_para_personas_con_discapacidad
 #Alfa de Cronbach
 ```{r}
 #Componente 1
-alpha(accesibilidad[, 1:4],check.keys=TRUE) #0.93
+#alpha(accesibilidad[, 1:4],check.keys=TRUE) #0.93
 
 #Componente 2
-alpha(accesibilidad[, 5],check.keys=TRUE) #solo es 1 variable
+#alpha(accesibilidad[, 5],check.keys=TRUE) #solo es 1 variable
 ```
 
 

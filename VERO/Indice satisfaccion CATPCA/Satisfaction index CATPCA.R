@@ -94,4 +94,4 @@ for(i in 1){
   rm(niveles)
 }
 
-write.csv(satisfaction_data, "Satisfaction_CATPCA_Estratos.csv")
+write.csv(satisfaction, "Satisfaction_CATPCA_Estratos.csv")
