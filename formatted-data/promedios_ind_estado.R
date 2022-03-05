@@ -91,8 +91,8 @@ datos_feif <- as_survey_design(datos_if, ids = UPM_DIS, strata = EST_DIS, weight
 
 # GENERALES -----------------------------------------------------------
 {acces <- datos_feif %>% 
-  select(vid, estr_acc_bueno, Estado) %>% 
-  group_by(Estado, estr_acc_bueno) %>% 
+  select(vid, estr_acc_bueno, Estado,credito) %>% 
+  group_by(Estado, estr_acc_bueno, credito) %>% 
   summarize(survey_total(vartype = NULL)) %>%  
   arrange(estr_acc_bueno, coef)
 #ssss
@@ -126,7 +126,7 @@ lbls = paste0(as.character(format(if_else(brks >0, brks, brks*(-1)),
 ggplot(acces, aes(
   x = reorder(Estado, desc(suma)),
   y = coef,
-  fill = estr_acc_bueno
+  fill = credito
 )) +
   geom_bar(stat = "identity", width = .6)   +
   coord_flip() +
@@ -142,11 +142,14 @@ ggplot(acces, aes(
   )+
   theme_solarized()+
   theme(
-    legend.position = "none",
+    legend.position = "top",
     panel.background = element_rect(fill = "#fffffc", colour = "#423E37",
                                     size = 2, linetype = "solid")
-  ) +
-  scale_fill_manual(values = c("#000000", "#beb7a4")) } #Accesibilidad
+  ) + 
+  geom_hline(yintercept = 0, size = .5) +
+  scale_fill_manual(values = c("#D9183B", "#F28888", "#F2C1B6"))
+                    
+} #Accesibilidad
 {acces <- datos_feif %>% 
     select(vid, estr_habit_bueno, Estado) %>% 
     group_by(Estado, estr_habit_bueno) %>% 
