@@ -1,7 +1,9 @@
-library(readr)
+
 library(tidyverse)
-data_viv <- read_csv("tvivienda_changes.csv")
-tsdem <- read_csv("tsdem.csv")
+library(readr)
+tvivienda <- read_csv("formatted-data/tvivienda.csv")
+#data_viv <- read_csv("tvivienda_changes.csv")
+#tsdem <- read_csv("tsdem.csv")
 
 ## Hacer variables de rangos para antiguedad de vivienda##-------------------------------------
 # En la encuesta se les pregunta por la antiguedad en edad y en rangos,
@@ -123,6 +125,37 @@ table(creditos$n_creditos)
 
 # Agregar columna de numero de creditos por vivienda 
 data_viv = cbind(data_viv, creditos$n_creditos)
+
+
+
+# Identificar si una vivienda tiene credito o no 
+creditos = tvivienda %>%
+  select(vid,P5_1,P5_15_01, P5_15_02,P5_15_03, P5_15_04,P5_15_05, P5_15_06)
+
+
+# Convertir a 0 porque significa que no tiene credito de infonavit 
+creditos[creditos == 2] <- 0 
+
+
+creditos = creditos%>%
+  rowwise()%>%
+  mutate(n_creditos = sum(c(P5_15_02,P5_15_03, P5_15_04,P5_15_05, P5_15_06)))
+
+creditos$otro_credito = ifelse(creditos$n_creditos > 0, 2,
+                               creditos$n_creditos)
+
+                               
+creditos = creditos %>%
+  mutate(total = sum(c(P5_15_01,otro_credito)))%>%
+  mutate(tipo_credito = ifelse(P5_15_01 == 1,"INFO",
+                               ifelse(P5_15_01 == 0 && total > 1 ,"OTRO",
+                                      ifelse(total == 0, "NO_CREDITO",
+                                             total))))
+
+
+creditos$tipo_credito[is.na(creditos$tipo_credito)] <- "NO_CREDITO" 
+
+
 
 #-------------------------------------------------------------------------------------------------------------
 
