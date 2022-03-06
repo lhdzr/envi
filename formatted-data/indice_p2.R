@@ -52,7 +52,7 @@ for(i in 1){
   rm(niveles)
 }
 
-write.csv(resultados, file = "p2_servicios.csv")
+#write.csv(resultados, file = "p2_servicios.csv")
 
 #Check Density
 plot(density(resultados$p2distance.2))
@@ -72,20 +72,21 @@ indicadores <- read_csv("datos_onu.csv") %>%
          P4_8_1,
          P4_8_2,
          P4_8_3,
-         P4_8_4)
+         P4_8_4,
+         hacinamiento)
 
 mean(is.na(indicadores))
 
-minimos <- rep(1,10)
+minimos <- rep(1,11)
 
-indice <- p2distance(matriz = as.matrix(indicadores[,2:11]),
+indice <- p2distance(matriz = as.matrix(indicadores[,2:12]),
                      reference_vector = minimos,
                      iterations = 50)
 
 resultados <- cbind(indicadores,indice[["p2distance"]])
 
 
-strata.DH_2020 <- strata.cumrootf(resultados[,12],
+strata.DH_2020 <- strata.cumrootf(resultados[,13],
                                   n = length(resultados$p2distance),
                                   Ls = 5)
 
@@ -96,7 +97,7 @@ assign(paste0("resultados"), data.frame(resultados, strata.DH_2020[["stratumID"]
 
 for(i in 1){
   niveles = get(paste0("resultados")) 
-  levels(niveles[,13]) = c("Muy baja", "Baja","Media","Alta","Muy Alta")
+  levels(niveles[,14]) = c("Muy baja", "Baja","Media","Alta","Muy Alta")
   assign(paste0("resultados"), niveles)
   rm(niveles)
 }

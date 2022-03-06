@@ -5,8 +5,10 @@ library(ggplot2)
 library(scales)
 library(ggthemes)
 
+
 options(survey.adjust.domain.lonely=TRUE)
 options(survey.lonely.psu="adjust")
+
 #Bajo las bases de datos
 estratos <- read_csv("estratos_onu.csv")
 codigos <- read_csv("codigos_identidad.csv", col_names = c("ENT", "Estado"))
@@ -94,8 +96,7 @@ datos_feif <- as_survey_design(datos_if, ids = UPM_DIS, strata = EST_DIS, weight
 
 
 # Especificos INFO-------------------------------------------------------------
-{
-  library(emojifont)
+{library(emojifont)
   acces <- datos_feif %>% 
   select(vid, estr_acc_bueno, Estado, credito) %>% 
   group_by(Estado,credito) %>% 
