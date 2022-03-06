@@ -550,17 +550,16 @@ ggplot(acces, aes(
 # Especificos INFO-------------------------------------------------------------
 {acces <- datos_feif %>% 
   select(vid, estr_acc_bueno, Estado, credito) %>% 
-  group_by(Estado, estr_acc_bueno, credito) %>% 
-  summarize(survey_mean(vartype = NULL)) %>%  
-  arrange(estr_acc_bueno, coef) 
+  group_by(Estado,credito) %>% 
+  summarize(bien = survey_mean(estr_acc_bueno ==1 ,vartype = NULL),
+            mal = survey_mean(estr_acc_bueno ==0 ,vartype = NULL)) 
 
-
-bueno <- acces %>% 
-  filter(estr_acc_bueno == 1)
-
-malo <- acces %>% 
-  filter(estr_acc_bueno == 0) %>% 
-  mutate(porc = coef)
+acces <- acces %>% 
+  select(Estado, credito,mal) %>% 
+  mutate(mal = mal * (-1)) %>% 
+  bind_rows(select(acces, Estado, credito, bien)) %>% 
+  mutate_all(~replace(., is.na(.), 0)) %>% 
+  mutate(coef = bien + mal)
 
 
 brks <- seq(-1, 1, length.out = 11)
@@ -568,6 +567,7 @@ lbls = paste0(as.character(format(if_else(brks >0, brks, brks*(-1)),
                                   big.mark = ",", digits = 2)))
 
 acces$coef <- if_else(acces$estr_acc_bueno == 1, acces$coef, -acces$coef)
+
 
 # Plot
 ggplot(acces, aes(
@@ -588,7 +588,10 @@ ggplot(acces, aes(
     y = "Cantidad de hogares",
     fill = element_blank()
   ) +
-  theme_solarized()+
+  theme_solarized()+ 
+  geom_hline(yintercept = 0, size = .5) +
+  scale_fill_manual(values = c("#D9183B", "#F28888", "#F2C1B6"))
+
   theme(
     panel.background = element_rect(fill = "#fffffc", colour = "#423E37",
                                     size = 2, linetype = "solid")
