@@ -31,6 +31,8 @@ tabla_final <- datos_fe %>%
             mala_ten = survey_mean(estr_ten %in% c("Muy Baja", "Baja"), vartype = NULL),
             mala_satis = survey_mean(estr_satis %in% c("Muy Baja", "Baja"), vartype = NULL)
             )
+  
+  
 #NO
 ggplot(tabla_final) +
   geom_col(aes(x = Estado, y = mala_acc))+
@@ -57,6 +59,8 @@ datos_if <- datos %>%
          estr_cul_bueno = ifelse(estr_cul %in% bueno, 1,0),
          estr_ten_bueno = ifelse(estr_ten %in% bueno, 1,0),
          estr_satis_bueno = ifelse(estr_satis %in% bueno, 1,0))
+
+
 
 
 creditos = datos_if%>%
@@ -89,466 +93,10 @@ datos_if$credito <- creditos$tipo_credito
 datos_feif <- as_survey_design(datos_if, ids = UPM_DIS, strata = EST_DIS, weights = FACTOR)
 
 
-# GENERALES -----------------------------------------------------------
-{acces <- datos_feif %>% 
-  select(vid, estr_acc_bueno, Estado,credito) %>% 
-  group_by(Estado, estr_acc_bueno, credito) %>% 
-  summarize(survey_total(vartype = NULL)) %>%  
-  arrange(estr_acc_bueno, coef)
-#ssss
-suma <- acces %>% 
-  mutate(coef = ifelse(coef>0,coef,coef*(-1))) %>% 
-  group_by(Estado) %>% 
-  summarise(suma = sum(coef))
-
-acces <- acces %>% 
-  left_join(suma, by = "Estado")
-
-bueno <- acces %>% 
-  filter(estr_acc_bueno == 1)
-
-malo <- acces %>% 
-  filter(estr_acc_bueno == 0)
-
-acces$coef <- if_else(acces$estr_acc_bueno == 1, acces$coef, -acces$coef)
-
-acces$estr_acc_bueno <- as.character(acces$estr_acc_bueno)
-
-
-brks <- seq(-max(malo$coef), max(bueno$coef), length.out = 5)
-lbls = paste0(as.character(format(if_else(brks >0, brks, brks*(-1)), 
-                           big.mark = ",", digits = 2)))
-
-
-
-
-# Plot
-ggplot(acces, aes(
-  x = reorder(Estado, desc(suma)),
-  y = coef,
-  fill = credito
-)) +
-  geom_bar(stat = "identity", width = .6)   +
-  coord_flip() +
-  scale_y_continuous(labels = lbls,
-                     breaks = brks) +
-  labs(
-    title = "Condición de Accesibilidad por hogar",
-    subtitle = "De acuerdo con el indicador",
-    caption = "Fuente: Elaboración propia",
-    x = "Estado",
-    y = "Cantidad de hogares",
-    fill = element_blank()
-  )+
-  theme_solarized()+
-  theme(
-    legend.position = "top",
-    panel.background = element_rect(fill = "#fffffc", colour = "#423E37",
-                                    size = 2, linetype = "solid")
-  ) + 
-  geom_hline(yintercept = 0, size = .5) +
-  scale_fill_manual(values = c("#D9183B", "#F28888", "#F2C1B6"))
-                    
-} #Accesibilidad
-{acces <- datos_feif %>% 
-    select(vid, estr_habit_bueno, Estado) %>% 
-    group_by(Estado, estr_habit_bueno) %>% 
-    summarize(survey_total(vartype = NULL)) %>%  
-    arrange(estr_habit_bueno, coef)
-  #ssss
-  suma <- acces %>% 
-    mutate(coef = ifelse(coef>0,coef,coef*(-1))) %>% 
-    group_by(Estado) %>% 
-    summarise(suma = sum(coef))
-  
-  acces <- acces %>% 
-    left_join(suma, by = "Estado")
-  
-  bueno <- acces %>% 
-    filter(estr_habit_bueno == 1)
-  
-  malo <- acces %>% 
-    filter(estr_habit_bueno == 0)
-  
-  acces$coef <- if_else(acces$estr_habit_bueno == 1, acces$coef, -acces$coef)
-  
-  acces$estr_habit_bueno <- as.character(acces$estr_habit_bueno)
-  
-  
-  brks <- seq(-max(malo$coef), max(bueno$coef), length.out = 5)
-  lbls = paste0(as.character(format(if_else(brks >0, brks, brks*(-1)), 
-                                    big.mark = ",", digits = 2)))
-  
-  # Plot
-  ggplot(acces, aes(
-    x = reorder(Estado, desc(suma)),
-    y = coef,
-    fill = estr_habit_bueno
-  )) +
-    geom_bar(stat = "identity", width = .6)   +
-    coord_flip() +
-    scale_y_continuous(labels = lbls,
-                       breaks = brks) +
-    labs(
-      title = "Condición de Habitabilidad por hogar",
-      subtitle = "De acuerdo con el indicador",
-      caption = "Fuente: Elaboración propia",
-      x = "Estado",
-      y = "Cantidad de hogares",
-      fill = element_blank()
-    )+
-    theme_solarized()+
-    theme(
-      legend.position = "none",
-      panel.background = element_rect(fill = "#fffffc", colour = "#423E37",
-                                      size = 2, linetype = "solid")
-    ) +
-    scale_fill_manual(values = c("#000000", "#beb7a4"))
-  } #Habitabilidad
-{acces <- datos_feif %>% 
-    select(vid, estr_serv_bueno, Estado) %>% 
-    group_by(Estado, estr_serv_bueno) %>% 
-    summarize(survey_total(vartype = NULL)) %>%  
-    arrange(estr_serv_bueno, coef)
-  #ssss
-  suma <- acces %>% 
-    mutate(coef = ifelse(coef>0,coef,coef*(-1))) %>% 
-    group_by(Estado) %>% 
-    summarise(suma = sum(coef))
-  
-  acces <- acces %>% 
-    left_join(suma, by = "Estado")
-  
-  bueno <- acces %>% 
-    filter(estr_serv_bueno == 1)
-  
-  malo <- acces %>% 
-    filter(estr_serv_bueno == 0)
-  
-  acces$coef <- if_else(acces$estr_serv_bueno == 1, acces$coef, -acces$coef)
-  
-  acces$estr_serv_bueno <- as.character(acces$estr_serv_bueno)
-  
-  
-  brks <- seq(-max(malo$coef), max(bueno$coef), length.out = 5)
-  lbls = paste0(as.character(format(if_else(brks >0, brks, brks*(-1)), 
-                                    big.mark = ",", digits = 2)))
-  
-  # Plot
-  ggplot(acces, aes(
-    x = reorder(Estado, desc(suma)),
-    y = coef,
-    fill = estr_serv_bueno
-  )) +
-    geom_bar(stat = "identity", width = .6)   +
-    coord_flip() +
-    scale_y_continuous(labels = lbls,
-                       breaks = brks) +
-    labs(
-      title = "Condición de Servicios por hogar",
-      subtitle = "De acuerdo con el indicador",
-      caption = "Fuente: Elaboración propia",
-      x = "Estado",
-      y = "Cantidad de hogares",
-      fill = element_blank()
-    )+
-    theme_solarized()+
-    theme(
-      legend.position = "none",
-      panel.background = element_rect(fill = "#fffffc", colour = "#423E37",
-                                      size = 2, linetype = "solid")
-    ) +
-    scale_fill_manual(values = c("#000000", "#beb7a4"))
-} #Servicios
-{acces <- datos_feif %>% 
-    select(vid, estr_ubi_bueno, Estado) %>% 
-    group_by(Estado, estr_ubi_bueno) %>% 
-    summarize(survey_total(vartype = NULL)) %>%  
-    arrange(estr_ubi_bueno, coef)
-  #ssss
-  suma <- acces %>% 
-    mutate(coef = ifelse(coef>0,coef,coef*(-1))) %>% 
-    group_by(Estado) %>% 
-    summarise(suma = sum(coef))
-  
-  acces <- acces %>% 
-    left_join(suma, by = "Estado")
-  
-  bueno <- acces %>% 
-    filter(estr_ubi_bueno == 1)
-  
-  malo <- acces %>% 
-    filter(estr_ubi_bueno == 0)
-  
-  acces$coef <- if_else(acces$estr_ubi_bueno == 1, acces$coef, -acces$coef)
-  
-  acces$estr_ubi_bueno <- as.character(acces$estr_ubi_bueno)
-  
-  
-  brks <- seq(-max(malo$coef), max(bueno$coef), length.out = 5)
-  lbls = paste0(as.character(format(if_else(brks >0, brks, brks*(-1)), 
-                                    big.mark = ",", digits = 2)))
-  
-  # Plot
-  ggplot(acces, aes(
-    x = reorder(Estado, desc(suma)),
-    y = coef,
-    fill = estr_ubi_bueno
-  )) +
-    geom_bar(stat = "identity", width = .6)   +
-    coord_flip() +
-    scale_y_continuous(labels = lbls,
-                       breaks = brks) +
-    labs(
-      title = "Condición de Ubicación por hogar",
-      subtitle = "De acuerdo con el indicador",
-      caption = "Fuente: Elaboración propia",
-      x = "Estado",
-      y = "Cantidad de hogares",
-      fill = element_blank()
-    )+
-    theme_solarized()+
-    theme(
-      legend.position = "none",
-      panel.background = element_rect(fill = "#fffffc", colour = "#423E37",
-                                      size = 2, linetype = "solid")
-    ) +
-    scale_fill_manual(values = c("#000000", "#beb7a4"))
-} #Ubicacion
-{acces <- datos_feif %>% 
-    select(vid, estr_aseq_bueno, Estado) %>% 
-    group_by(Estado, estr_aseq_bueno) %>% 
-    summarize(survey_total(vartype = NULL)) %>%  
-    arrange(estr_aseq_bueno, coef)
-  #ssss
-  suma <- acces %>% 
-    mutate(coef = ifelse(coef>0,coef,coef*(-1))) %>% 
-    group_by(Estado) %>% 
-    summarise(suma = sum(coef))
-  
-  acces <- acces %>% 
-    left_join(suma, by = "Estado")
-  
-  bueno <- acces %>% 
-    filter(estr_aseq_bueno == 1)
-  
-  malo <- acces %>% 
-    filter(estr_aseq_bueno == 0)
-  
-  acces$coef <- if_else(acces$estr_aseq_bueno == 1, acces$coef, -acces$coef)
-  
-  acces$estr_aseq_bueno <- as.character(acces$estr_aseq_bueno)
-  
-  
-  brks <- seq(-max(malo$coef), max(bueno$coef), length.out = 5)
-  lbls = paste0(as.character(format(if_else(brks >0, brks, brks*(-1)), 
-                                    big.mark = ",", digits = 2)))
-  
-  # Plot
-  ggplot(acces, aes(
-    x = reorder(Estado, desc(suma)),
-    y = coef,
-    fill = estr_aseq_bueno
-  )) +
-    geom_bar(stat = "identity", width = .6)   +
-    coord_flip() +
-    scale_y_continuous(labels = lbls,
-                       breaks = brks) +
-    labs(
-      title = "Condición de asequibilidad por hogar",
-      subtitle = "De acuerdo con el indicador",
-      caption = "Fuente: Elaboración propia",
-      x = "Estado",
-      y = "Cantidad de hogares",
-      fill = element_blank()
-    )+
-    theme_solarized()+
-    theme(
-      legend.position = "none",
-      panel.background = element_rect(fill = "#fffffc", colour = "#423E37",
-                                      size = 2, linetype = "solid")
-    ) +
-    scale_fill_manual(values = c("#000000", "#beb7a4"))
-} #Asequibilidad
-{acces <- datos_feif %>% 
-    select(vid, estr_cul_bueno, Estado) %>% 
-    group_by(Estado, estr_cul_bueno) %>% 
-    summarize(survey_total(vartype = NULL)) %>%  
-    arrange(estr_cul_bueno, coef)
-  #ssss
-  suma <- acces %>% 
-    mutate(coef = ifelse(coef>0,coef,coef*(-1))) %>% 
-    group_by(Estado) %>% 
-    summarise(suma = sum(coef))
-  
-  acces <- acces %>% 
-    left_join(suma, by = "Estado")
-  
-  bueno <- acces %>% 
-    filter(estr_cul_bueno == 1)
-  
-  malo <- acces %>% 
-    filter(estr_cul_bueno == 0)
-  
-  acces$coef <- if_else(acces$estr_cul_bueno == 1, acces$coef, -acces$coef)
-  
-  acces$estr_cul_bueno <- as.character(acces$estr_cul_bueno)
-  
-  
-  brks <- seq(-max(malo$coef), max(bueno$coef), length.out = 5)
-  lbls = paste0(as.character(format(if_else(brks >0, brks, brks*(-1)), 
-                                    big.mark = ",", digits = 2)))
-  
-  # Plot
-  ggplot(acces, aes(
-    x = reorder(Estado, desc(suma)),
-    y = coef,
-    fill = estr_cul_bueno
-  )) +
-    geom_bar(stat = "identity", width = .6)   +
-    coord_flip() +
-    scale_y_continuous(labels = lbls,
-                       breaks = brks) +
-    labs(
-      title = "Condición de cultura por hogar",
-      subtitle = "De acuerdo con el indicador",
-      caption = "Fuente: Elaboración propia",
-      x = "Estado",
-      y = "Cantidad de hogares",
-      fill = element_blank()
-    )+
-    theme_solarized()+
-    theme(
-      legend.position = "none",
-      panel.background = element_rect(fill = "#fffffc", colour = "#423E37",
-                                      size = 2, linetype = "solid")
-    ) +
-    scale_fill_manual(values = c("#000000", "#beb7a4"))
-} #Cultura
-{acces <- datos_feif %>% 
-    select(vid, estr_ten_bueno, Estado) %>% 
-    group_by(Estado, estr_ten_bueno) %>% 
-    summarize(survey_total(vartype = NULL)) %>%  
-    arrange(estr_ten_bueno, coef)
-  #ssss
-  suma <- acces %>% 
-    mutate(coef = ifelse(coef>0,coef,coef*(-1))) %>% 
-    group_by(Estado) %>% 
-    summarise(suma = sum(coef))
-  
-  acces <- acces %>% 
-    left_join(suma, by = "Estado")
-  
-  bueno <- acces %>% 
-    filter(estr_ten_bueno == 1)
-  
-  malo <- acces %>% 
-    filter(estr_ten_bueno == 0)
-  
-  acces$coef <- if_else(acces$estr_ten_bueno == 1, acces$coef, -acces$coef)
-  
-  acces$estr_ten_bueno <- as.character(acces$estr_ten_bueno)
-  
-  
-  brks <- seq(-max(malo$coef), max(bueno$coef), length.out = 5)
-  lbls = paste0(as.character(format(if_else(brks >0, brks, brks*(-1)), 
-                                    big.mark = ",", digits = 2)))
-  
-  # Plot
-  ggplot(acces, aes(
-    x = reorder(Estado, desc(suma)),
-    y = coef,
-    fill = estr_ten_bueno
-  )) +
-    geom_bar(stat = "identity", width = .6)   +
-    coord_flip() +
-    scale_y_continuous(labels = lbls,
-                       breaks = brks) +
-    labs(
-      title = "Condición de tenencia por hogar",
-      subtitle = "De acuerdo con el indicador",
-      caption = "Fuente: Elaboración propia",
-      x = "Estado",
-      y = "Cantidad de hogares",
-      fill = element_blank()
-    )+
-    theme_solarized()+
-    theme(
-      legend.position = "none",
-      panel.background = element_rect(fill = "#fffffc", colour = "#423E37",
-                                      size = 2, linetype = "solid")
-    ) +
-    scale_fill_manual(values = c("#000000", "#beb7a4"))
-} #Tenencia
-{acces <- datos_feif %>% 
-    select(vid, estr_satis_bueno, Estado) %>% 
-    group_by(Estado, estr_satis_bueno) %>% 
-    summarize(survey_total(vartype = NULL)) %>%  
-    arrange(estr_satis_bueno, coef)
-  #ssss
-  suma <- acces %>% 
-    mutate(coef = ifelse(coef>0,coef,coef*(-1))) %>% 
-    group_by(Estado) %>% 
-    summarise(suma = sum(coef))
-  
-  acces <- acces %>% 
-    left_join(suma, by = "Estado")
-  
-  bueno <- acces %>% 
-    filter(estr_satis_bueno == 1)
-  
-  malo <- acces %>% 
-    filter(estr_satis_bueno == 0)
-  
-  acces$coef <- if_else(acces$estr_satis_bueno == 1, acces$coef, -acces$coef)
-  
-  acces$estr_satis_bueno <- as.character(acces$estr_satis_bueno)
-  
-  
-  brks <- seq(-max(malo$coef), max(bueno$coef), length.out = 5)
-  lbls = paste0(as.character(format(if_else(brks >0, brks, brks*(-1)), 
-                                    big.mark = ",", digits = 2)))
-  
-  # Plot
-  ggplot(acces, aes(
-    x = reorder(Estado, desc(suma)),
-    y = coef,
-    fill = estr_satis_bueno
-  )) +
-    geom_bar(stat = "identity", width = .6)   +
-    coord_flip() +
-    scale_y_continuous(labels = lbls,
-                       breaks = brks) +
-    labs(
-      title = "Condición de satisfecho por hogar",
-      subtitle = "De acuerdo con el indicador",
-      caption = "Fuente: Elaboración propia",
-      x = "Estado",
-      y = "Cantidad de hogares",
-      fill = element_blank()
-    )+
-    theme_solarized()+
-    theme(
-      legend.position = "none",
-      panel.background = element_rect(fill = "#fffffc", colour = "#423E37",
-                                      size = 2, linetype = "solid")
-    ) +
-    scale_fill_manual(values = c("#000000", "#beb7a4"))
-} #Satisfacción
-
-
-
-
-
-
-  
-  
-  
-  
-
-
 # Especificos INFO-------------------------------------------------------------
-{acces <- datos_feif %>% 
+{
+  library(emojifont)
+  acces <- datos_feif %>% 
   select(vid, estr_acc_bueno, Estado, credito) %>% 
   group_by(Estado,credito) %>% 
   summarize(bien = survey_mean(estr_acc_bueno ==1 ,vartype = NULL),
@@ -562,434 +110,422 @@ acces <- acces %>%
   mutate(coef = bien + mal)
 
 
-brks <- seq(-1, 1, length.out = 11)
-lbls = paste0(as.character(format(if_else(brks >0, brks, brks*(-1)), 
-                                  big.mark = ",", digits = 2)))
-
-acces$coef <- if_else(acces$estr_acc_bueno == 1, acces$coef, -acces$coef)
+brks <- c(-2,2)
+lbls = c(emoji("warning"), emoji("wheelchair"))
 
 
 # Plot
 ggplot(acces, aes(
   x = Estado,
   y = coef,
-  fill = credito
+  fill = factor(credito, levels = c( "NO_CREDITO", "OTRO", "INFO"))
 )) +
   geom_bar(stat = "identity", width = .6) +
-  geom_text(aes(label= round(coef, digits= 2)), position = position_stack(vjust=0.5)) +
-  coord_flip() +
+  geom_text(size = 2.8, aes(label= round(if_else(coef>0, coef,-coef), digits= 2)), position = position_stack(vjust=0.5)) +
+  coord_flip(ylim = c(-3,3))  +
   scale_y_continuous(labels = lbls,
                      breaks = brks)  +
+  
   labs(
     title = "Condición de Accesibilidad por hogar",
-    subtitle = "De acuerdo con el indicador",
+    subtitle = "De acuerdo con el indicador DP2",
     caption = "Fuente: Elaboración propia",
     x = "Estado",
-    y = "Cantidad de hogares",
+    y = "Porcentaje de hogares",
     fill = element_blank()
   ) +
   theme_solarized()+ 
   geom_hline(yintercept = 0, size = .5) +
-  scale_fill_manual(values = c("#D9183B", "#F28888", "#F2C1B6"))
-
+  scale_fill_manual(values = c("#F2C1B6", "#F28888", "#D9183B"),
+                    labels = c("No tiene", "Otro", "Infonavit"),
+                    name = "Tipo de crédito")+
   theme(
     panel.background = element_rect(fill = "#fffffc", colour = "#423E37",
-                                    size = 2, linetype = "solid")
-  )
+                                    size = 2, linetype = "solid"),
+    plot.title = element_text(size = 20, face = "bold", color = "black"),
+    plot.subtitle =  element_text(size = 10, face = "bold", color = "black"),
+    axis.text.x = element_text(family = "OpenSansEmoji", size = 20, face = "bold", 
+                               colour = "black" ))
+
+ggsave("accesibilidad.png", plot = last_plot(), scale = 1.3)
 } #Info accesibilidad
 
-{acces <- datos_feif %>% 
-    select(vid, estr_habit_bueno, Estado) %>% 
-    filter(credito == "INFO") %>% 
-    group_by(Estado, estr_habit_bueno) %>% 
-    summarize(survey_total(vartype = NULL)) %>%  
-    arrange(estr_habit_bueno, coef)
-  #ssss
-  suma <- acces %>% 
-    mutate(coef = ifelse(coef>0,coef,coef*(-1))) %>% 
-    group_by(Estado) %>% 
-    summarise(suma = sum(coef))
+{library(emojifont)
+  acces <- datos_feif %>% 
+    select(vid, estr_habit_bueno, Estado, credito) %>% 
+    group_by(Estado,credito) %>% 
+    summarize(bien = survey_mean(estr_habit_bueno ==1 ,vartype = NULL),
+              mal = survey_mean(estr_habit_bueno ==0 ,vartype = NULL)) 
   
   acces <- acces %>% 
-    left_join(suma, by = "Estado")
-  
-  bueno <- acces %>% 
-    filter(estr_habit_bueno == 1)
-  
-  malo <- acces %>% 
-    filter(estr_habit_bueno == 0)
-  
-  acces$coef <- if_else(acces$estr_habit_bueno == 1, acces$coef, -acces$coef)
-  
-  acces$estr_habit_bueno <- as.character(acces$estr_habit_bueno)
+    select(Estado, credito,mal) %>% 
+    mutate(mal = mal * (-1)) %>% 
+    bind_rows(select(acces, Estado, credito, bien)) %>% 
+    mutate_all(~replace(., is.na(.), 0)) %>% 
+    mutate(coef = bien + mal)
   
   
-  brks <- seq(-max(malo$coef), max(bueno$coef), length.out = 5)
-  lbls = paste0(as.character(format(if_else(brks >0, brks, brks*(-1)), 
-                                    big.mark = ",", digits = 2)))
+  brks <- c(-2,2)
+  lbls = c(emoji("warning"), emoji("house_with_garden"))
+  
   
   # Plot
   ggplot(acces, aes(
-    x = reorder(Estado, desc(suma)),
+    x = Estado,
     y = coef,
-    fill = estr_habit_bueno
+    fill = factor(credito, levels = c( "NO_CREDITO", "OTRO", "INFO"))
   )) +
-    geom_bar(stat = "identity", width = .6)   +
-    coord_flip() +
+    geom_bar(stat = "identity", width = .6) +
+    geom_text(size = 2.8, aes(label= round(if_else(coef>0, coef,-coef), digits= 2)), position = position_stack(vjust=0.5)) +
+    coord_flip(ylim = c(-3,3))  +
     scale_y_continuous(labels = lbls,
-                       breaks = brks) +
+                       breaks = brks)  +
+    
     labs(
       title = "Condición de Habitabilidad por hogar",
-      subtitle = "De acuerdo con el indicador",
+      subtitle = "De acuerdo con el indicador DP2",
       caption = "Fuente: Elaboración propia",
       x = "Estado",
-      y = "Cantidad de hogares",
+      y = "Porcentaje de hogares",
       fill = element_blank()
-    )+
-    theme_solarized()+
-    theme(
-      legend.position = "none",
-      panel.background = element_rect(fill = "#fffffc", colour = "#423E37",
-                                      size = 2, linetype = "solid")
     ) +
-    scale_fill_manual(values = c("#000000", "#beb7a4"))
+    theme_solarized()+ 
+    geom_hline(yintercept = 0, size = .5) +
+    scale_fill_manual(values = c("#F2C1B6", "#F28888", "#D9183B"),
+                      labels = c("No tiene", "Otro", "Infonavit"),
+                      name = "Tipo de crédito")+
+    theme(
+      panel.background = element_rect(fill = "#fffffc", colour = "#423E37",
+                                      size = 2, linetype = "solid"),
+      plot.title = element_text(size = 20, face = "bold", color = "black"),
+      plot.subtitle =  element_text(size = 10, face = "bold", color = "black"),
+      axis.text.x = element_text(family = "EmojiOne", size = 20, face = "bold", 
+                                 colour = "black" ))
+  ggsave("habitabilidad.png", plot = last_plot(), scale = 1.3)
 } #Habitabilidad INFO
-{acces <- datos_feif %>% 
-    select(vid, estr_serv_bueno, Estado)%>% 
-    filter(credito == "INFO") %>% 
-    group_by(Estado, estr_serv_bueno) %>% 
-    summarize(survey_total(vartype = NULL)) %>%  
-    arrange(estr_serv_bueno, coef)
-  #ssss
-  suma <- acces %>% 
-    mutate(coef = ifelse(coef>0,coef,coef*(-1))) %>% 
-    group_by(Estado) %>% 
-    summarise(suma = sum(coef))
+{library(emojifont)
+  acces <- datos_feif %>% 
+    select(vid, estr_serv_bueno, Estado, credito) %>% 
+    group_by(Estado,credito) %>% 
+    summarize(bien = survey_mean(estr_serv_bueno ==1 ,vartype = NULL),
+              mal = survey_mean(estr_serv_bueno ==0 ,vartype = NULL)) 
   
   acces <- acces %>% 
-    left_join(suma, by = "Estado")
-  
-  bueno <- acces %>% 
-    filter(estr_serv_bueno == 1)
-  
-  malo <- acces %>% 
-    filter(estr_serv_bueno == 0)
-  
-  acces$coef <- if_else(acces$estr_serv_bueno == 1, acces$coef, -acces$coef)
-  
-  acces$estr_serv_bueno <- as.character(acces$estr_serv_bueno)
+    select(Estado, credito,mal) %>% 
+    mutate(mal = mal * (-1)) %>% 
+    bind_rows(select(acces, Estado, credito, bien)) %>% 
+    mutate_all(~replace(., is.na(.), 0)) %>% 
+    mutate(coef = bien + mal)
   
   
-  brks <- seq(-max(malo$coef), max(bueno$coef), length.out = 5)
-  lbls = paste0(as.character(format(if_else(brks >0, brks, brks*(-1)), 
-                                    big.mark = ",", digits = 2)))
+  brks <- c(-2,2)
+  lbls = c(emoji("mute"), emoji("speaker"))
+  
   
   # Plot
   ggplot(acces, aes(
-    x = reorder(Estado, desc(suma)),
+    x = Estado,
     y = coef,
-    fill = estr_serv_bueno
+    fill = factor(credito, levels = c( "NO_CREDITO", "OTRO", "INFO"))
   )) +
-    geom_bar(stat = "identity", width = .6)   +
-    coord_flip() +
+    geom_bar(stat = "identity", width = .6) +
+    geom_text(size = 2.8, aes(label= round(if_else(coef>0, coef,-coef), digits= 2)), position = position_stack(vjust=0.5)) +
+    coord_flip(ylim = c(-3,3))  +
     scale_y_continuous(labels = lbls,
-                       breaks = brks) +
+                       breaks = brks)  +
+    
     labs(
       title = "Condición de Servicios por hogar",
-      subtitle = "De acuerdo con el indicador",
+      subtitle = "De acuerdo con el indicador DP2",
       caption = "Fuente: Elaboración propia",
       x = "Estado",
-      y = "Cantidad de hogares",
+      y = "Porcentaje de hogares",
       fill = element_blank()
-    )+
-    theme_solarized()+
-    theme(
-      legend.position = "none",
-      panel.background = element_rect(fill = "#fffffc", colour = "#423E37",
-                                      size = 2, linetype = "solid")
     ) +
-    scale_fill_manual(values = c("#000000", "#beb7a4"))
+    theme_solarized()+ 
+    geom_hline(yintercept = 0, size = .5) +
+    scale_fill_manual(values = c("#F2C1B6", "#F28888", "#D9183B"),
+                      labels = c("No tiene", "Otro", "Infonavit"),
+                      name = "Tipo de crédito")+
+    theme(
+      panel.background = element_rect(fill = "#fffffc", colour = "#423E37",
+                                      size = 2, linetype = "solid"),
+      plot.title = element_text(size = 20, face = "bold", color = "black"),
+      plot.subtitle =  element_text(size = 10, face = "bold", color = "black"),
+      axis.text.x = element_text(family = "OpenSansEmoji", size = 20, face = "bold", 
+                                 colour = "black" ))
+  ggsave("servicios.png", plot = last_plot(), scale = 1.3)
 } #Servicios INFO
-{acces <- datos_feif %>% 
-    select(vid, estr_ubi_bueno, Estado)%>% 
-    filter(credito == "INFO") %>% 
-    group_by(Estado, estr_ubi_bueno) %>% 
-    summarize(survey_total(vartype = NULL)) %>%  
-    arrange(estr_ubi_bueno, coef)
-  #ssss
-  suma <- acces %>% 
-    mutate(coef = ifelse(coef>0,coef,coef*(-1))) %>% 
-    group_by(Estado) %>% 
-    summarise(suma = sum(coef))
+{library(emojifont)
+  acces <- datos_feif %>% 
+    select(vid, estr_ubi_bueno, Estado, credito) %>% 
+    group_by(Estado,credito) %>% 
+    summarize(bien = survey_mean(estr_ubi_bueno ==1 ,vartype = NULL),
+              mal = survey_mean(estr_ubi_bueno ==0 ,vartype = NULL)) 
   
   acces <- acces %>% 
-    left_join(suma, by = "Estado")
-  
-  bueno <- acces %>% 
-    filter(estr_ubi_bueno == 1)
-  
-  malo <- acces %>% 
-    filter(estr_ubi_bueno == 0)
-  
-  acces$coef <- if_else(acces$estr_ubi_bueno == 1, acces$coef, -acces$coef)
-  
-  acces$estr_ubi_bueno <- as.character(acces$estr_ubi_bueno)
+    select(Estado, credito,mal) %>% 
+    mutate(mal = mal * (-1)) %>% 
+    bind_rows(select(acces, Estado, credito, bien)) %>% 
+    mutate_all(~replace(., is.na(.), 0)) %>% 
+    mutate(coef = bien + mal)
   
   
-  brks <- seq(-max(malo$coef), max(bueno$coef), length.out = 5)
-  lbls = paste0(as.character(format(if_else(brks >0, brks, brks*(-1)), 
-                                    big.mark = ",", digits = 2)))
+  brks <- c(-2,2)
+  lbls = c(emoji("factory"), emoji("city_sunrise"))
+  
   
   # Plot
   ggplot(acces, aes(
-    x = reorder(Estado, desc(suma)),
+    x = Estado,
     y = coef,
-    fill = estr_ubi_bueno
+    fill = factor(credito, levels = c( "NO_CREDITO", "OTRO", "INFO"))
   )) +
-    geom_bar(stat = "identity", width = .6)   +
-    coord_flip() +
+    geom_bar(stat = "identity", width = .6) +
+    geom_text(size = 2.8, aes(label= round(if_else(coef>0, coef,-coef), digits= 2)), position = position_stack(vjust=0.5)) +
+    coord_flip(ylim = c(-3,3))  +
     scale_y_continuous(labels = lbls,
-                       breaks = brks) +
+                       breaks = brks)  +
+    
     labs(
-      title = "Condición de Ubicación por hogar",
-      subtitle = "De acuerdo con el indicador",
+      title = "Condición de ubicación por hogar",
+      subtitle = "De acuerdo con el indicador DP2",
       caption = "Fuente: Elaboración propia",
       x = "Estado",
-      y = "Cantidad de hogares",
+      y = "Porcentaje de hogares",
       fill = element_blank()
-    )+
-    theme_solarized()+
-    theme(
-      legend.position = "none",
-      panel.background = element_rect(fill = "#fffffc", colour = "#423E37",
-                                      size = 2, linetype = "solid")
     ) +
-    scale_fill_manual(values = c("#000000", "#beb7a4"))
+    theme_solarized()+ 
+    geom_hline(yintercept = 0, size = .5) +
+    scale_fill_manual(values = c("#F2C1B6", "#F28888", "#D9183B"),
+                      labels = c("No tiene", "Otro", "Infonavit"),
+                      name = "Tipo de crédito")+
+    theme(
+      panel.background = element_rect(fill = "#fffffc", colour = "#423E37",
+                                      size = 2, linetype = "solid"),
+      plot.title = element_text(size = 20, face = "bold", color = "black"),
+      plot.subtitle =  element_text(size = 10, face = "bold", color = "black"),
+      axis.text.x = element_text(family = "OpenSansEmoji", size = 20, face = "bold", 
+                                 colour = "black" ))
+  ggsave("ubicacion.png", plot = last_plot(), scale = 1.3)
 } #Ubicacion INFO
-{acces <- datos_feif %>% 
-    select(vid, estr_aseq_bueno, Estado)%>% 
-    filter(credito == "INFO") %>% 
-    group_by(Estado, estr_aseq_bueno) %>% 
-    summarize(survey_total(vartype = NULL)) %>%  
-    arrange(estr_aseq_bueno, coef)
-  #ssss
-  suma <- acces %>% 
-    mutate(coef = ifelse(coef>0,coef,coef*(-1))) %>% 
-    group_by(Estado) %>% 
-    summarise(suma = sum(coef))
+{library(emojifont)
+  acces <- datos_feif %>% 
+    select(vid, estr_aseq_bueno, Estado, credito) %>% 
+    group_by(Estado,credito) %>% 
+    summarize(bien = survey_mean(estr_aseq_bueno ==1 ,vartype = NULL),
+              mal = survey_mean(estr_aseq_bueno ==0 ,vartype = NULL)) 
   
   acces <- acces %>% 
-    left_join(suma, by = "Estado")
-  
-  bueno <- acces %>% 
-    filter(estr_aseq_bueno == 1)
-  
-  malo <- acces %>% 
-    filter(estr_aseq_bueno == 0)
-  
-  acces$coef <- if_else(acces$estr_aseq_bueno == 1, acces$coef, -acces$coef)
-  
-  acces$estr_aseq_bueno <- as.character(acces$estr_aseq_bueno)
+    select(Estado, credito,mal) %>% 
+    mutate(mal = mal * (-1)) %>% 
+    bind_rows(select(acces, Estado, credito, bien)) %>% 
+    mutate_all(~replace(., is.na(.), 0)) %>% 
+    mutate(coef = bien + mal)
   
   
-  brks <- seq(-max(malo$coef), max(bueno$coef), length.out = 5)
-  lbls = paste0(as.character(format(if_else(brks >0, brks, brks*(-1)), 
-                                    big.mark = ",", digits = 2)))
+  brks <- c(-2,2)
+  lbls = c(paste0(emoji("heavy_dollar_sign"),emoji("heavy_dollar_sign"),
+                  emoji("heavy_dollar_sign")), emoji("heavy_dollar_sign"))
+  
   
   # Plot
   ggplot(acces, aes(
-    x = reorder(Estado, desc(suma)),
+    x = Estado,
     y = coef,
-    fill = estr_aseq_bueno
+    fill = factor(credito, levels = c( "NO_CREDITO", "OTRO", "INFO"))
   )) +
-    geom_bar(stat = "identity", width = .6)   +
-    coord_flip() +
+    geom_bar(stat = "identity", width = .6) +
+    geom_text(size = 2.8, aes(label= round(if_else(coef>0, coef,-coef), digits= 2)), position = position_stack(vjust=0.5)) +
+    coord_flip(ylim = c(-3,3))  +
     scale_y_continuous(labels = lbls,
-                       breaks = brks) +
+                       breaks = brks)  +
+    
     labs(
       title = "Condición de asequibilidad por hogar",
-      subtitle = "De acuerdo con el indicador",
+      subtitle = "De acuerdo con el indicador DP2",
       caption = "Fuente: Elaboración propia",
       x = "Estado",
-      y = "Cantidad de hogares",
+      y = "Porcentaje de hogares",
       fill = element_blank()
-    )+
-    theme_solarized()+
-    theme(
-      legend.position = "none",
-      panel.background = element_rect(fill = "#fffffc", colour = "#423E37",
-                                      size = 2, linetype = "solid")
     ) +
-    scale_fill_manual(values = c("#000000", "#beb7a4"))
+    theme_solarized()+ 
+    geom_hline(yintercept = 0, size = .5) +
+    scale_fill_manual(values = c("#F2C1B6", "#F28888", "#D9183B"),
+                      labels = c("No tiene", "Otro", "Infonavit"),
+                      name = "Tipo de crédito")+
+    theme(
+      panel.background = element_rect(fill = "#fffffc", colour = "#423E37",
+                                      size = 2, linetype = "solid"),
+      plot.title = element_text(size = 20, face = "bold", color = "black"),
+      plot.subtitle =  element_text(size = 10, face = "bold", color = "black"),
+      axis.text.x = element_text(family = "OpenSansEmoji", size = 20, face = "bold", 
+                                 colour = "black" ))
+  ggsave("asequibilidad.png", plot = last_plot(), scale = 1.3)
 } #Asequibilidad INFO
-{acces <- datos_feif %>% 
-    select(vid, estr_cul_bueno, Estado)%>% 
-    filter(credito == "INFO") %>% 
-    group_by(Estado, estr_cul_bueno) %>% 
-    summarize(survey_total(vartype = NULL)) %>%  
-    arrange(estr_cul_bueno, coef)
-  #ssss
-  suma <- acces %>% 
-    mutate(coef = ifelse(coef>0,coef,coef*(-1))) %>% 
-    group_by(Estado) %>% 
-    summarise(suma = sum(coef))
+{library(emojifont)
+  acces <- datos_feif %>% 
+    select(vid, estr_cul_bueno, Estado, credito) %>% 
+    group_by(Estado,credito) %>% 
+    summarize(bien = survey_mean(estr_cul_bueno ==1 ,vartype = NULL),
+              mal = survey_mean(estr_cul_bueno ==0 ,vartype = NULL)) 
   
   acces <- acces %>% 
-    left_join(suma, by = "Estado")
-  
-  bueno <- acces %>% 
-    filter(estr_cul_bueno == 1)
-  
-  malo <- acces %>% 
-    filter(estr_cul_bueno == 0)
-  
-  acces$coef <- if_else(acces$estr_cul_bueno == 1, acces$coef, -acces$coef)
-  
-  acces$estr_cul_bueno <- as.character(acces$estr_cul_bueno)
+    select(Estado, credito,mal) %>% 
+    mutate(mal = mal * (-1)) %>% 
+    bind_rows(select(acces, Estado, credito, bien)) %>% 
+    mutate_all(~replace(., is.na(.), 0)) %>% 
+    mutate(coef = bien + mal)
   
   
-  brks <- seq(-max(malo$coef), max(bueno$coef), length.out = 5)
-  lbls = paste0(as.character(format(if_else(brks >0, brks, brks*(-1)), 
-                                    big.mark = ",", digits = 2)))
+  brks <- c(-2,2)
+  lbls = c(emoji("no_pedestrians"), emoji("children_crossing"))
+  
   
   # Plot
   ggplot(acces, aes(
-    x = reorder(Estado, desc(suma)),
+    x = Estado,
     y = coef,
-    fill = estr_cul_bueno
+    fill = factor(credito, levels = c( "NO_CREDITO", "OTRO", "INFO"))
   )) +
-    geom_bar(stat = "identity", width = .6)   +
-    coord_flip() +
+    geom_bar(stat = "identity", width = .6) +
+    geom_text(size = 2.8, aes(label= round(if_else(coef>0, coef,-coef), digits= 2)), position = position_stack(vjust=0.5)) +
+    coord_flip(ylim = c(-3,3))  +
     scale_y_continuous(labels = lbls,
-                       breaks = brks) +
+                       breaks = brks)  +
+    
     labs(
       title = "Condición de cultura por hogar",
-      subtitle = "De acuerdo con el indicador",
+      subtitle = "De acuerdo con el indicador DP2",
       caption = "Fuente: Elaboración propia",
       x = "Estado",
-      y = "Cantidad de hogares",
+      y = "Porcentaje de hogares",
       fill = element_blank()
-    )+
-    theme_solarized()+
-    theme(
-      legend.position = "none",
-      panel.background = element_rect(fill = "#fffffc", colour = "#423E37",
-                                      size = 2, linetype = "solid")
     ) +
-    scale_fill_manual(values = c("#000000", "#beb7a4"))
+    theme_solarized()+ 
+    geom_hline(yintercept = 0, size = .5) +
+    scale_fill_manual(values = c("#F2C1B6", "#F28888", "#D9183B"),
+                      labels = c("No tiene", "Otro", "Infonavit"),
+                      name = "Tipo de crédito")+
+    theme(
+      panel.background = element_rect(fill = "#fffffc", colour = "#423E37",
+                                      size = 2, linetype = "solid"),
+      plot.title = element_text(size = 20, face = "bold", color = "black"),
+      plot.subtitle =  element_text(size = 10, face = "bold", color = "black"),
+      axis.text.x = element_text(family = "OpenSansEmoji", size = 20, face = "bold", 
+                                 colour = "black" ))
+  ggsave("cultura.png", plot = last_plot(), scale = 1.3)
 } #Cultura INFO
-{acces <- datos_feif %>% 
-    select(vid, estr_ten_bueno, Estado)%>% 
-    filter(credito == "INFO") %>% 
-    group_by(Estado, estr_ten_bueno) %>% 
-    summarize(survey_total(vartype = NULL)) %>%  
-    arrange(estr_ten_bueno, coef)
-  #ssss
-  suma <- acces %>% 
-    mutate(coef = ifelse(coef>0,coef,coef*(-1))) %>% 
-    group_by(Estado) %>% 
-    summarise(suma = sum(coef))
+{library(emojifont)
+  acces <- datos_feif %>% 
+    select(vid, estr_ten_bueno, Estado, credito) %>% 
+    group_by(Estado,credito) %>% 
+    summarize(bien = survey_mean(estr_ten_bueno ==1 ,vartype = NULL),
+              mal = survey_mean(estr_ten_bueno ==0 ,vartype = NULL)) 
   
   acces <- acces %>% 
-    left_join(suma, by = "Estado")
-  
-  bueno <- acces %>% 
-    filter(estr_ten_bueno == 1)
-  
-  malo <- acces %>% 
-    filter(estr_ten_bueno == 0)
-  
-  acces$coef <- if_else(acces$estr_ten_bueno == 1, acces$coef, -acces$coef)
-  
-  acces$estr_ten_bueno <- as.character(acces$estr_ten_bueno)
+    select(Estado, credito,mal) %>% 
+    mutate(mal = mal * (-1)) %>% 
+    bind_rows(select(acces, Estado, credito, bien)) %>% 
+    mutate_all(~replace(., is.na(.), 0)) %>% 
+    mutate(coef = bien + mal)
   
   
-  brks <- seq(-max(malo$coef), max(bueno$coef), length.out = 5)
-  lbls = paste0(as.character(format(if_else(brks >0, brks, brks*(-1)), 
-                                    big.mark = ",", digits = 2)))
+  brks <- c(-2,2)
+  lbls = c(emoji("unlock"), emoji("lock"))
+  
   
   # Plot
   ggplot(acces, aes(
-    x = reorder(Estado, desc(suma)),
+    x = Estado,
     y = coef,
-    fill = estr_ten_bueno
+    fill = factor(credito, levels = c( "NO_CREDITO", "OTRO", "INFO"))
   )) +
-    geom_bar(stat = "identity", width = .6)   +
-    coord_flip() +
+    geom_bar(stat = "identity", width = .6) +
+    geom_text(size = 2.8, aes(label= round(if_else(coef>0, coef,-coef), digits= 2)), position = position_stack(vjust=0.5)) +
+    coord_flip(ylim = c(-3,3))  +
     scale_y_continuous(labels = lbls,
-                       breaks = brks) +
+                       breaks = brks)  +
+    
     labs(
       title = "Condición de tenencia por hogar",
-      subtitle = "De acuerdo con el indicador",
+      subtitle = "De acuerdo con el indicador DP2",
       caption = "Fuente: Elaboración propia",
       x = "Estado",
-      y = "Cantidad de hogares",
+      y = "Porcentaje de hogares",
       fill = element_blank()
-    )+
-    theme_solarized()+
-    theme(
-      legend.position = "none",
-      panel.background = element_rect(fill = "#fffffc", colour = "#423E37",
-                                      size = 2, linetype = "solid")
     ) +
-    scale_fill_manual(values = c("#000000", "#beb7a4"))
+    theme_solarized()+ 
+    geom_hline(yintercept = 0, size = .5) +
+    scale_fill_manual(values = c("#F2C1B6", "#F28888", "#D9183B"),
+                      labels = c("No tiene", "Otro", "Infonavit"),
+                      name = "Tipo de crédito")+
+    theme(
+      panel.background = element_rect(fill = "#fffffc", colour = "#423E37",
+                                      size = 2, linetype = "solid"),
+      plot.title = element_text(size = 20, face = "bold", color = "black"),
+      plot.subtitle =  element_text(size = 10, face = "bold", color = "black"),
+      axis.text.x = element_text(family = "OpenSansEmoji", size = 20, face = "bold", 
+                                 colour = "black" ))
+  ggsave("tenencia.png", plot = last_plot(), scale = 1.3)
 } #Tenencia INFO
-{acces <- datos_feif %>% 
-    select(vid, estr_satis_bueno, Estado)%>% 
-    filter(credito == "INFO") %>% 
-    group_by(Estado, estr_satis_bueno) %>% 
-    summarize(survey_total(vartype = NULL)) %>%  
-    arrange(estr_satis_bueno, coef)
-  #ssss
-  suma <- acces %>% 
-    mutate(coef = ifelse(coef>0,coef,coef*(-1))) %>% 
-    group_by(Estado) %>% 
-    summarise(suma = sum(coef))
+{library(emojifont)
+  acces <- datos_feif %>% 
+    select(vid, estr_satis_bueno, Estado, credito) %>% 
+    group_by(Estado,credito) %>% 
+    summarize(bien = survey_mean(estr_satis_bueno ==1 ,vartype = NULL),
+              mal = survey_mean(estr_satis_bueno ==0 ,vartype = NULL)) 
   
   acces <- acces %>% 
-    left_join(suma, by = "Estado")
-  
-  bueno <- acces %>% 
-    filter(estr_satis_bueno == 1)
-  
-  malo <- acces %>% 
-    filter(estr_satis_bueno == 0)
-  
-  acces$coef <- if_else(acces$estr_satis_bueno == 1, acces$coef, -acces$coef)
-  
-  acces$estr_satis_bueno <- as.character(acces$estr_satis_bueno)
+    select(Estado, credito,mal) %>% 
+    mutate(mal = mal * (-1)) %>% 
+    bind_rows(select(acces, Estado, credito, bien)) %>% 
+    mutate_all(~replace(., is.na(.), 0)) %>% 
+    mutate(coef = bien + mal)
   
   
-  brks <- seq(-max(malo$coef), max(bueno$coef), length.out = 5)
-  lbls = paste0(as.character(format(if_else(brks >0, brks, brks*(-1)), 
-                                    big.mark = ",", digits = 2)))
+  brks <- c(-2,2)
+  lbls = c(emoji("disappointed"), emoji("smile"))
+  
   
   # Plot
   ggplot(acces, aes(
-    x = reorder(Estado, desc(suma)),
+    x = Estado,
     y = coef,
-    fill = estr_satis_bueno
+    fill = factor(credito, levels = c( "NO_CREDITO", "OTRO", "INFO"))
   )) +
-    geom_bar(stat = "identity", width = .6)   +
-    coord_flip() +
+    geom_bar(stat = "identity", width = .6) +
+    geom_text(size = 2.8, aes(label= round(if_else(coef>0, coef,-coef), digits= 2)), position = position_stack(vjust=0.5)) +
+    coord_flip(ylim = c(-3,3))  +
     scale_y_continuous(labels = lbls,
-                       breaks = brks) +
+                       breaks = brks)  +
+    
     labs(
-      title = "Condición de satisfecho por hogar",
-      subtitle = "De acuerdo con el indicador",
+      title = "Condición de satisfacción por hogar",
+      subtitle = "De acuerdo con el indicador DP2",
       caption = "Fuente: Elaboración propia",
       x = "Estado",
-      y = "Cantidad de hogares",
+      y = "Porcentaje de hogares",
       fill = element_blank()
-    )+
-    theme_solarized()+
-    theme(
-      legend.position = "none",
-      panel.background = element_rect(fill = "#fffffc", colour = "#423E37",
-                                      size = 2, linetype = "solid")
     ) +
-    scale_fill_manual(values = c("#000000", "#beb7a4"))
+    theme_solarized()+ 
+    geom_hline(yintercept = 0, size = .5) +
+    scale_fill_manual(values = c("#F2C1B6", "#F28888", "#D9183B"),
+                      labels = c("No tiene", "Otro", "Infonavit"),
+                      name = "Tipo de crédito")+
+    theme(
+      panel.background = element_rect(fill = "#fffffc", colour = "#423E37",
+                                      size = 2, linetype = "solid"),
+      plot.title = element_text(size = 20, face = "bold", color = "black"),
+      plot.subtitle =  element_text(size = 10, face = "bold", color = "black"),
+      axis.text.x = element_text(family = "OpenSansEmoji", size = 20, face = "bold", 
+                                 colour = "black" ))
+  ggsave("satisfaccion.png", plot = last_plot(), scale = 1.3)
 } #Satisfacción INFO
+
+
+
+
 
 # Especificos Otro-------------------------------------------------------------
 {acces <- datos_feif %>% 

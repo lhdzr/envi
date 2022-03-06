@@ -1,4 +1,4 @@
-rm(list=ls())
+#rm(list=ls())
 
 library(stratification)
 library(tidyverse)
@@ -86,35 +86,11 @@ ind_cultura <- ind_cul %>%
 # estrato asequibilidad ---------------------------------------------------
 library(stratification)
 ind_aseq <- read_csv("prop_aseq.csv") %>% 
-  filter(!is.na(prop_gasto),
-         prop_gasto <0.8) %>% 
-  select(vid, prop_gasto)
-
-estrato_aseq <- strata.cumrootf(ind_aseq$prop_gasto,
-                                n = length(ind_aseq$prop_gasto),
-                                Ls = 5)
+  select(vid, prop_gasto) %>% 
+  mutate(estr_aseq = if_else(prop_gasto > .30, "Baja", "Alta"))
 
 
-#aqui pego los estratos (q se encuentran en strata.DH_2020[[stratumID]])
-#a el data frame de resultados, como una nueva columna
-#observa que los estratos son numericos
-assign(paste0("ind_aseq"), data.frame(ind_aseq, estrato_aseq[["stratumID"]])) 
 
-
-#aqui le pido en orden; que guarde en niveles al df "resultados"
-#Que asigne niveles a la columna 13, del recien creado df niveles
-#Estos niveles (levels) asignados van de 1 a 5, de muy bajo a muy alto,
-#finalmente, junto la columna 13 de niveles con el df resultados y borro niveles
-
-for(i in 1){
-  niveles = get(paste0("ind_aseq")) 
-  levels(niveles[,3]) = c("Muy Alta", "Alta","Media","Baja","Muy Baja")
-  assign(paste0("ind_aseq"), niveles)
-  rm(niveles)
-}
-
-ind_aseq <- ind_aseq %>% 
-  rename(estr_aseq = estrato_aseq...stratumID...)
 
 
 # Estratificacion de satisfaccion -----------------------------------------
