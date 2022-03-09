@@ -4,6 +4,7 @@ library(srvyr)
 library(ggplot2)
 library(scales)
 library(ggthemes)
+library(emojifont)
 
 
 options(survey.adjust.domain.lonely=TRUE)
@@ -32,7 +33,7 @@ tabla_final <- datos_fe %>%
             mala_cul = survey_mean(estr_cul %in% c("Muy Baja", "Baja"), vartype = NULL),
             mala_ten = survey_mean(estr_ten %in% c("Muy Baja", "Baja"), vartype = NULL),
             mala_satis = survey_mean(estr_satis %in% c("Muy Baja", "Baja"), vartype = NULL)
-            )
+            ) 
   
   
 #NO
@@ -83,20 +84,20 @@ creditos$otro_credito = ifelse(creditos$n_creditos > 0, 2,
 
 creditos = creditos %>%
   mutate(total = sum(c(P5_15_01,otro_credito)))%>%
-  mutate(tipo_credito = ifelse(P5_15_01 == 1,"INFO",
-                               ifelse(P5_15_01 == 0 && total > 1 ,"OTRO",
-                                      ifelse(total == 0, "NO_CREDITO",
+  mutate(tipo_credito = ifelse(P5_15_01 == 1,"Infonavit",
+                               ifelse(P5_15_01 == 0 && total > 1 ,"Otro",
+                                      ifelse(total == 0, "Ninguno",
                                              total))))
 
-creditos$tipo_credito[is.na(creditos$tipo_credito)] <- "NO_CREDITO"
+creditos$tipo_credito[is.na(creditos$tipo_credito)] <- "Ninguno"
 
 datos_if$credito <- creditos$tipo_credito
 
 datos_feif <- as_survey_design(datos_if, ids = UPM_DIS, strata = EST_DIS, weights = FACTOR)
 
 
-# Especificos INFO-------------------------------------------------------------
-{library(emojifont)
+# Especificos Infonavit-------------------------------------------------------------
+{load.emojifont("OpenSansEmoji.ttf")
   acces <- datos_feif %>% 
   select(vid, estr_acc_bueno, Estado, credito) %>% 
   group_by(Estado,credito) %>% 
@@ -111,22 +112,20 @@ acces <- acces %>%
   mutate(coef = bien + mal)
 
 
-brks <- c(-2,2)
-lbls = c(emoji("warning"), emoji("wheelchair"))
+brks <- seq(-1,1,.20)
+lbls = as.character(if_else(brks>0,brks*(100),-brks*100))
 
 
 # Plot
 ggplot(acces, aes(
-  x = Estado,
+  x = reorder(Estado, coef),
   y = coef,
-  fill = factor(credito, levels = c( "NO_CREDITO", "OTRO", "INFO"))
-)) +
-  geom_bar(stat = "identity", width = .6) +
-  geom_text(size = 2.8, aes(label= round(if_else(coef>0, coef,-coef), digits= 2)), position = position_stack(vjust=0.5)) +
-  coord_flip(ylim = c(-3,3))  +
+  fill = credito)
+) +
+  geom_bar(stat = "identity", width = .8, position = "dodge") +
+  coord_flip(ylim = c(-.8,.8))  +
   scale_y_continuous(labels = lbls,
                      breaks = brks)  +
-  
   labs(
     title = "Condición de Accesibilidad por hogar",
     subtitle = "De acuerdo con el indicador DP2",
@@ -138,18 +137,19 @@ ggplot(acces, aes(
   theme_solarized()+ 
   geom_hline(yintercept = 0, size = .5) +
   scale_fill_manual(values = c("#F2C1B6", "#F28888", "#D9183B"),
-                    labels = c("No tiene", "Otro", "Infonavit"),
+                    labels = c("No tiene", "Otro", "Infonavitnavit"),
                     name = "Tipo de crédito")+
   theme(
     panel.background = element_rect(fill = "#fffffc", colour = "#423E37",
                                     size = 2, linetype = "solid"),
     plot.title = element_text(size = 20, face = "bold", color = "black"),
     plot.subtitle =  element_text(size = 10, face = "bold", color = "black"),
-    axis.text.x = element_text(family = "OpenSansEmoji", size = 20, face = "bold", 
-                               colour = "black" ))
+    axis.text.x = element_text(family = "OpenSansEmoji", size = 8, face = "bold", 
+                               colour = "black" ))+
+  coord_polar()
 
 ggsave("accesibilidad.png", plot = last_plot(), scale = 1.3)
-} #Info accesibilidad
+} #Infonavit accesibilidad
 
 {library(emojifont)
   acces <- datos_feif %>% 
@@ -174,7 +174,7 @@ ggsave("accesibilidad.png", plot = last_plot(), scale = 1.3)
   ggplot(acces, aes(
     x = Estado,
     y = coef,
-    fill = factor(credito, levels = c( "NO_CREDITO", "OTRO", "INFO"))
+    fill = factor(credito, levels = c( "Ninguno", "Otro", "Infonavit"))
   )) +
     geom_bar(stat = "identity", width = .6) +
     geom_text(size = 2.8, aes(label= round(if_else(coef>0, coef,-coef), digits= 2)), position = position_stack(vjust=0.5)) +
@@ -203,7 +203,7 @@ ggsave("accesibilidad.png", plot = last_plot(), scale = 1.3)
       axis.text.x = element_text(family = "EmojiOne", size = 20, face = "bold", 
                                  colour = "black" ))
   ggsave("habitabilidad.png", plot = last_plot(), scale = 1.3)
-} #Habitabilidad INFO
+} #Habitabilidad Infonavit
 {library(emojifont)
   acces <- datos_feif %>% 
     select(vid, estr_serv_bueno, Estado, credito) %>% 
@@ -227,7 +227,7 @@ ggsave("accesibilidad.png", plot = last_plot(), scale = 1.3)
   ggplot(acces, aes(
     x = Estado,
     y = coef,
-    fill = factor(credito, levels = c( "NO_CREDITO", "OTRO", "INFO"))
+    fill = factor(credito, levels = c( "Ninguno", "Otro", "Infonavit"))
   )) +
     geom_bar(stat = "identity", width = .6) +
     geom_text(size = 2.8, aes(label= round(if_else(coef>0, coef,-coef), digits= 2)), position = position_stack(vjust=0.5)) +
@@ -256,7 +256,7 @@ ggsave("accesibilidad.png", plot = last_plot(), scale = 1.3)
       axis.text.x = element_text(family = "OpenSansEmoji", size = 20, face = "bold", 
                                  colour = "black" ))
   ggsave("servicios.png", plot = last_plot(), scale = 1.3)
-} #Servicios INFO
+} #Servicios Infonavit
 {library(emojifont)
   acces <- datos_feif %>% 
     select(vid, estr_ubi_bueno, Estado, credito) %>% 
@@ -280,7 +280,7 @@ ggsave("accesibilidad.png", plot = last_plot(), scale = 1.3)
   ggplot(acces, aes(
     x = Estado,
     y = coef,
-    fill = factor(credito, levels = c( "NO_CREDITO", "OTRO", "INFO"))
+    fill = factor(credito, levels = c( "Ninguno", "Otro", "Infonavit"))
   )) +
     geom_bar(stat = "identity", width = .6) +
     geom_text(size = 2.8, aes(label= round(if_else(coef>0, coef,-coef), digits= 2)), position = position_stack(vjust=0.5)) +
@@ -309,7 +309,7 @@ ggsave("accesibilidad.png", plot = last_plot(), scale = 1.3)
       axis.text.x = element_text(family = "OpenSansEmoji", size = 20, face = "bold", 
                                  colour = "black" ))
   ggsave("ubicacion.png", plot = last_plot(), scale = 1.3)
-} #Ubicacion INFO
+} #Ubicacion Infonavit
 {library(emojifont)
   acces <- datos_feif %>% 
     select(vid, estr_aseq_bueno, Estado, credito) %>% 
@@ -334,7 +334,7 @@ ggsave("accesibilidad.png", plot = last_plot(), scale = 1.3)
   ggplot(acces, aes(
     x = Estado,
     y = coef,
-    fill = factor(credito, levels = c( "NO_CREDITO", "OTRO", "INFO"))
+    fill = factor(credito, levels = c( "Ninguno", "Otro", "Infonavit"))
   )) +
     geom_bar(stat = "identity", width = .6) +
     geom_text(size = 2.8, aes(label= round(if_else(coef>0, coef,-coef), digits= 2)), position = position_stack(vjust=0.5)) +
@@ -363,7 +363,7 @@ ggsave("accesibilidad.png", plot = last_plot(), scale = 1.3)
       axis.text.x = element_text(family = "OpenSansEmoji", size = 20, face = "bold", 
                                  colour = "black" ))
   ggsave("asequibilidad.png", plot = last_plot(), scale = 1.3)
-} #Asequibilidad INFO
+} #Asequibilidad Infonavit
 {library(emojifont)
   acces <- datos_feif %>% 
     select(vid, estr_cul_bueno, Estado, credito) %>% 
@@ -387,7 +387,7 @@ ggsave("accesibilidad.png", plot = last_plot(), scale = 1.3)
   ggplot(acces, aes(
     x = Estado,
     y = coef,
-    fill = factor(credito, levels = c( "NO_CREDITO", "OTRO", "INFO"))
+    fill = factor(credito, levels = c( "Ninguno", "Otro", "Infonavit"))
   )) +
     geom_bar(stat = "identity", width = .6) +
     geom_text(size = 2.8, aes(label= round(if_else(coef>0, coef,-coef), digits= 2)), position = position_stack(vjust=0.5)) +
@@ -416,7 +416,7 @@ ggsave("accesibilidad.png", plot = last_plot(), scale = 1.3)
       axis.text.x = element_text(family = "OpenSansEmoji", size = 20, face = "bold", 
                                  colour = "black" ))
   ggsave("cultura.png", plot = last_plot(), scale = 1.3)
-} #Cultura INFO
+} #Cultura Infonavit
 {library(emojifont)
   acces <- datos_feif %>% 
     select(vid, estr_ten_bueno, Estado, credito) %>% 
@@ -440,7 +440,7 @@ ggsave("accesibilidad.png", plot = last_plot(), scale = 1.3)
   ggplot(acces, aes(
     x = Estado,
     y = coef,
-    fill = factor(credito, levels = c( "NO_CREDITO", "OTRO", "INFO"))
+    fill = factor(credito, levels = c( "Ninguno", "Otro", "Infonavit"))
   )) +
     geom_bar(stat = "identity", width = .6) +
     geom_text(size = 2.8, aes(label= round(if_else(coef>0, coef,-coef), digits= 2)), position = position_stack(vjust=0.5)) +
@@ -469,7 +469,7 @@ ggsave("accesibilidad.png", plot = last_plot(), scale = 1.3)
       axis.text.x = element_text(family = "OpenSansEmoji", size = 20, face = "bold", 
                                  colour = "black" ))
   ggsave("tenencia.png", plot = last_plot(), scale = 1.3)
-} #Tenencia INFO
+} #Tenencia Infonavit
 {library(emojifont)
   acces <- datos_feif %>% 
     select(vid, estr_satis_bueno, Estado, credito) %>% 
@@ -493,7 +493,7 @@ ggsave("accesibilidad.png", plot = last_plot(), scale = 1.3)
   ggplot(acces, aes(
     x = Estado,
     y = coef,
-    fill = factor(credito, levels = c( "NO_CREDITO", "OTRO", "INFO"))
+    fill = factor(credito, levels = c( "Ninguno", "Otro", "Infonavit"))
   )) +
     geom_bar(stat = "identity", width = .6) +
     geom_text(size = 2.8, aes(label= round(if_else(coef>0, coef,-coef), digits= 2)), position = position_stack(vjust=0.5)) +
@@ -522,7 +522,7 @@ ggsave("accesibilidad.png", plot = last_plot(), scale = 1.3)
       axis.text.x = element_text(family = "OpenSansEmoji", size = 20, face = "bold", 
                                  colour = "black" ))
   ggsave("satisfaccion.png", plot = last_plot(), scale = 1.3)
-} #Satisfacción INFO
+} #Satisfacción Infonavit
 
 
 
@@ -531,7 +531,7 @@ ggsave("accesibilidad.png", plot = last_plot(), scale = 1.3)
 # Especificos Otro-------------------------------------------------------------
 {acces <- datos_feif %>% 
   select(vid, estr_acc_bueno, Estado, credito) %>% 
-  filter(credito == "OTRO") %>% 
+  filter(credito == "Otro") %>% 
   group_by(Estado, estr_acc_bueno) %>% 
   summarize(survey_mean(vartype = NULL)) %>%  
   arrange(estr_acc_bueno, coef)
@@ -579,7 +579,7 @@ ggplot(acces, aes(
   ) } #Info accesibilidad
 {acces <- datos_feif %>% 
     select(vid, estr_habit_bueno, Estado, credito) %>% 
-    filter(credito == "OTRO") %>% 
+    filter(credito == "Otro") %>% 
     group_by(Estado, estr_habit_bueno) %>% 
     summarize(survey_total(vartype = NULL)) %>%  
     arrange(estr_habit_bueno, coef)
@@ -632,10 +632,10 @@ ggplot(acces, aes(
                                       size = 2, linetype = "solid")
     ) +
     scale_fill_manual(values = c("#000000", "#beb7a4"))
-} #Habitabilidad INFO
+} #Habitabilidad Infonavit
 {acces <- datos_feif %>% 
     select(vid, estr_serv_bueno, Estado, credito)%>% 
-    filter(credito == "OTRO") %>% 
+    filter(credito == "Otro") %>% 
     group_by(Estado, estr_serv_bueno) %>% 
     summarize(survey_total(vartype = NULL)) %>%  
     arrange(estr_serv_bueno, coef)
@@ -688,10 +688,10 @@ ggplot(acces, aes(
                                       size = 2, linetype = "solid")
     ) +
     scale_fill_manual(values = c("#000000", "#beb7a4"))
-} #Servicios INFO
+} #Servicios Infonavit
 {acces <- datos_feif %>% 
     select(vid, estr_ubi_bueno, Estado, credito)%>% 
-    filter(credito == "OTRO") %>% 
+    filter(credito == "Otro") %>% 
     group_by(Estado, estr_ubi_bueno) %>% 
     summarize(survey_total(vartype = NULL)) %>%  
     arrange(estr_ubi_bueno, coef)
@@ -744,10 +744,10 @@ ggplot(acces, aes(
                                       size = 2, linetype = "solid")
     ) +
     scale_fill_manual(values = c("#000000", "#beb7a4"))
-} #Ubicacion INFO
+} #Ubicacion Infonavit
 {acces <- datos_feif %>% 
     select(vid, estr_aseq_bueno, Estado, credito)%>% 
-    filter(credito == "OTRO") %>% 
+    filter(credito == "Otro") %>% 
     group_by(Estado, estr_aseq_bueno) %>% 
     summarize(survey_total(vartype = NULL)) %>%  
     arrange(estr_aseq_bueno, coef)
@@ -800,10 +800,10 @@ ggplot(acces, aes(
                                       size = 2, linetype = "solid")
     ) +
     scale_fill_manual(values = c("#000000", "#beb7a4"))
-} #Asequibilidad INFO
+} #Asequibilidad Infonavit
 {acces <- datos_feif %>% 
     select(vid, estr_cul_bueno, Estado, credito)%>% 
-    filter(credito == "OTRO") %>% 
+    filter(credito == "Otro") %>% 
     group_by(Estado, estr_cul_bueno) %>% 
     summarize(survey_total(vartype = NULL)) %>%  
     arrange(estr_cul_bueno, coef)
@@ -856,10 +856,10 @@ ggplot(acces, aes(
                                       size = 2, linetype = "solid")
     ) +
     scale_fill_manual(values = c("#000000", "#beb7a4"))
-} #Cultura INFO
+} #Cultura Infonavit
 {acces <- datos_feif %>% 
     select(vid, estr_ten_bueno, Estado, credito)%>% 
-    filter(credito == "OTRO") %>% 
+    filter(credito == "Otro") %>% 
     group_by(Estado, estr_ten_bueno) %>% 
     summarize(survey_total(vartype = NULL)) %>%  
     arrange(estr_ten_bueno, coef)
@@ -912,10 +912,10 @@ ggplot(acces, aes(
                                       size = 2, linetype = "solid")
     ) +
     scale_fill_manual(values = c("#000000", "#beb7a4"))
-} #Tenencia INFO
+} #Tenencia Infonavit
 {acces <- datos_feif %>% 
     select(vid, estr_satis_bueno, Estado, credito)%>% 
-    filter(credito == "OTRO") %>% 
+    filter(credito == "Otro") %>% 
     group_by(Estado, estr_satis_bueno) %>% 
     summarize(survey_total(vartype = NULL)) %>%  
     arrange(estr_satis_bueno, coef)
@@ -968,9 +968,844 @@ ggplot(acces, aes(
                                       size = 2, linetype = "solid")
     ) +
     scale_fill_manual(values = c("#000000", "#beb7a4"))
-} #Satisfacción INFO
+} #Satisfacción Infonavit
 
 
+
+# Graf --------------------------------------------------------------------
+library(tidyverse)
+library(ggplot2)
+
+p2 <- c(52.36,48.31, 30.14,21.38,7.29,13.98, 33.49,39.43,25.59,27.93)
+nombres <- c("Accesibilidad P2", "Accesibilidad CATPCA",  "Habitabilidad P2", 
+             "Habitabilidad CATPCA","Servicios P2", "Servicios CATPCA",
+             "Ubicación P2","Ubicación CATPCA" ,"Satisfacción P2", "Satisfacción CATPCA")
+
+indice <- as_tibble(cbind(nombres, p2)) %>% 
+  mutate(tipo = str_extract(nombres, pattern = "[C|P]{1}"),
+         nombre = str_remove(nombres, "P2|CATPCA"),
+         p2 = as.numeric(p2)) 
+
+
+ggplot(indice, aes(x = nombre, y = p2, fill = tipo))+
+  geom_bar(stat = "identity", position = "dodge") +
+  labs(title = "Porcentaje de ....")
+
+
+
+
+
+# Graficos rene -----------------------------------------------------------
+
+load.emojifont("OpenSansEmoji.ttf")
+acces <- datos_feif %>% 
+  select(vid, estr_acc_bueno, Estado, credito) %>% 
+  group_by(Estado,credito) %>% 
+  summarize(bien = survey_mean(estr_acc_bueno ==1 ,vartype = NULL),
+            mal = survey_mean(estr_acc_bueno ==0 ,vartype = NULL)) 
+
+acces <- acces %>% 
+  select(Estado, credito,mal) %>% 
+  mutate(mal = mal * (-1)) %>% 
+  bind_rows(select(acces, Estado, credito, bien)) %>% 
+  mutate_all(~replace(., is.na(.), 0)) %>% 
+  mutate(coef = bien + mal)
+
+
+brks <- c(-2,2)
+lbls = c(emoji("warning"), emoji("wheelchair"))
+
+
+# Plot
+ggplot(acces, aes(
+  x = credito,
+  y = coef,
+  fill = bien >0 )
+) +
+  geom_bar(stat = "identity", width = .6) +
+  geom_text(size = 2.8, aes(label= round(if_else(coef>0, coef,-coef), digits= 2)), position = position_stack(vjust=0.5)) +
+  coord_flip(ylim = c(-.8,.8))  +
+  scale_y_continuous(labels = lbls,
+                     breaks = brks)  +
+  facet_wrap(~Estado, ncol = 4)+
+  labs(
+    title = "Condición de Accesibilidad por hogar",
+    subtitle = "De acuerdo con el indicador DP2",
+    caption = "Fuente: Elaboración propia",
+    x = "Estado",
+    y = "Porcentaje de hogares",
+    fill = element_blank()
+  ) +
+  theme_solarized()+ 
+  geom_hline(yintercept = 0, size = .5) +
+  scale_fill_manual(values = c("#F2C1B6", "#F28888", "#D9183B"),
+                    labels = c("No tiene", "Otro", "Infonavit"),
+                    name = "Tipo de crédito")+
+  theme(
+    panel.background = element_rect(fill = "#fffffc", colour = "#423E37",
+                                    size = 2, linetype = "solid"),
+    plot.title = element_text(size = 20, face = "bold", color = "black"),
+    plot.subtitle =  element_text(size = 10, face = "bold", color = "black"),
+    axis.text.x = element_text(family = "OpenSansEmoji", size = 20, face = "bold", 
+                               colour = "black" ))
+
+
+
+
+# Experimentacion sin wrap ---------------------------------------------------------
+
+
+{load.emojifont("OpenSansEmoji.ttf")
+  acces <- datos_feif %>% 
+    select(vid, estr_acc_bueno, Estado, credito) %>% 
+    group_by(Estado,credito)  %>% 
+    summarize(bien = survey_mean(estr_acc_bueno ==1 ,vartype = NULL),
+              mal = survey_mean(estr_acc_bueno ==0 ,vartype = NULL)) 
+
+
+  brks <- seq(-1,1,.20)
+  lbls = as.character(if_else(brks>0,brks*(100),-brks*100))
+  
+  
+  # Plot
+  ggplot(acces, aes(
+    x = Estado,
+    y = bien,
+    fill = credito)) +
+    geom_bar( stat = "identity", width = 0.8, position = "dodge") +
+    geom_hline(aes(yintercept = median(bien), color = "Promedio"), linetype = "dashed") +
+    coord_flip(ylim = c(0,.8))  +
+    scale_y_continuous(labels = lbls,
+                       breaks = brks)  +
+    labs(
+      title = "Porcentaje de hogares con buena accesibilidad",
+      subtitle = "De acuerdo con el indicador DP2",
+      caption = "Fuente: Elaboración propia",
+      x = "Estado",
+      y = "Porcentaje de hogares",
+      fill = element_blank()
+    )  +
+    scale_fill_manual(values = c(Ninguno = "#F2C1B6", Otro = "#F28888", Infonavit = "#D9183B"),
+                      labels = c("No tiene", "Otro", "Infonavit"),
+                      name = "Tipo de crédito")+
+    scale_color_manual(name = element_blank(), values = c(Promedio = "black") )+
+    theme(
+      panel.background = element_rect(fill = "#fffffc", colour = "#423E37",
+                                      size = 2, linetype = "solid"),
+      plot.title = element_text(size = 20, face = "bold", color = "black"),
+      plot.subtitle =  element_text(size = 10, face = "bold", color = "black"),
+      axis.text.x = element_text(family = "OpenSansEmoji", size = 8, face = "bold", 
+                                 colour = "black" ),
+      legend.position = "top",
+      axis.title.y = element_blank()) 
+  
+  
+  ggsave("accesibilidad.png", plot = last_plot(), width = 2500, height = 4000, units = "px")
+} #Info accesibilidad
+
+{library(emojifont)
+  acces <- datos_feif %>% 
+    select(vid, estr_habit_bueno, Estado, credito) %>% 
+    group_by(Estado,credito) %>% 
+    summarize(bien = survey_mean(estr_habit_bueno ==1 ,vartype = NULL),
+              mal = survey_mean(estr_habit_bueno ==0 ,vartype = NULL)) 
+  
+  
+  brks <- seq(-1,1,.20)
+  lbls = as.character(if_else(brks>0,brks*(100),-brks*100))
+  
+  
+  # Plot
+  ggplot(acces, aes(
+    x = Estado,
+    y = bien,
+    fill = credito)) +
+    geom_bar( stat = "identity", width = 0.8, position = "dodge") +
+    geom_hline(aes(yintercept = median(bien), color = "Promedio"), linetype = "dashed") +
+    coord_flip(ylim = c(0,1))  +
+    scale_y_continuous(labels = lbls,
+                       breaks = brks)  +
+    labs(
+      title = "Porcentaje de hogares con buena Habitabilidad",
+      subtitle = "De acuerdo con el indicador DP2",
+      caption = "Fuente: Elaboración propia",
+      x = "Estado",
+      y = "Porcentaje de hogares",
+      fill = element_blank()
+    )  +
+    scale_fill_manual(values =  c(Ninguno = "#F2C1B6", Otro = "#F28888", Infonavit = "#D9183B"),
+                      labels = c("No tiene", "Otro", "Infonavit"),
+                      name = "Tipo de crédito")+
+    scale_color_manual(name = element_blank(), values = c(Promedio = "black") )+
+    theme(
+      panel.background = element_rect(fill = "#fffffc", colour = "#423E37",
+                                      size = 2, linetype = "solid"),
+      plot.title = element_text(size = 20, face = "bold", color = "black"),
+      plot.subtitle =  element_text(size = 10, face = "bold", color = "black"),
+      axis.text.x = element_text(family = "OpenSansEmoji", size = 8, face = "bold", 
+                                 colour = "black" ),
+      legend.position = "top",
+      axis.title.y = element_blank()) 
+  
+  ggsave("habitabilidad.png", plot = last_plot(), width = 2500, height = 4000, units = "px")
+} #Habitabilidad Infonavit
+
+{
+  acces <- datos_feif %>% 
+    select(vid, estr_serv_bueno, Estado, credito) %>% 
+    group_by(Estado,credito) %>% 
+    summarize(bien = survey_mean(estr_serv_bueno ==1 ,vartype = NULL),
+              mal = survey_mean(estr_serv_bueno ==0 ,vartype = NULL)) 
+  
+  
+  brks <- seq(-1,1,.20)
+  lbls = as.character(if_else(brks>0,brks*(100),-brks*100))
+  
+
+  
+  # Plot
+  ggplot(acces, aes(
+    x = Estado,
+    y = bien,
+    fill = credito)) +
+    geom_bar( stat = "identity", width = 0.8, position = "dodge") +
+    geom_hline(aes(yintercept = median(bien), color = "Promedio"), linetype = "dashed") +
+    coord_flip(ylim = c(0,1))  +
+    scale_y_continuous(labels = lbls,
+                       breaks = brks)  +
+    labs(
+      title = "Porcentaje de hogares con buenos servicios",
+      subtitle = "De acuerdo con el indicador DP2",
+      caption = "Fuente: Elaboración propia",
+      x = "Estado",
+      y = "Porcentaje de hogares",
+      fill = element_blank()
+    )  +
+    scale_fill_manual(values =  c(Ninguno = "#F2C1B6", Otro = "#F28888", Infonavit = "#D9183B"),
+                      labels = c("No tiene", "Otro", "Infonavit"),
+                      name = "Tipo de crédito")+
+    scale_color_manual(name = element_blank(), values = c(Promedio = "black") )+
+    theme(
+      panel.background = element_rect(fill = "#fffffc", colour = "#423E37",
+                                      size = 2, linetype = "solid"),
+      plot.title = element_text(size = 20, face = "bold", color = "black"),
+      plot.subtitle =  element_text(size = 10, face = "bold", color = "black"),
+      axis.text.x = element_text(family = "OpenSansEmoji", size = 8, face = "bold", 
+                                 colour = "black" ),
+      legend.position = "top",
+      axis.title.y = element_blank()) 
+  
+  ggsave("servicios.png", plot = last_plot(), width = 2500, height = 4000, units = "px")
+} #Servicios Infonavit
+
+{library(emojifont)
+  acces <- datos_feif %>% 
+    select(vid, estr_ubi_bueno, Estado, credito) %>% 
+    group_by(Estado,credito) %>% 
+    summarize(bien = survey_mean(estr_ubi_bueno ==1 ,vartype = NULL),
+              mal = survey_mean(estr_ubi_bueno ==0 ,vartype = NULL)) 
+  
+
+  brks <- seq(-1,1,.20)
+  lbls = as.character(if_else(brks>0,brks*(100),-brks*100))
+  
+  
+  # Plot
+  ggplot(acces, aes(
+    x = Estado,
+    y = bien,
+    fill = credito)) +
+    geom_bar( stat = "identity", width = 0.8, position = "dodge") +
+    geom_hline(aes(yintercept = median(bien), color = "Promedio"), linetype = "dashed") +
+    coord_flip(ylim = c(0,1))  +
+    scale_y_continuous(labels = lbls,
+                       breaks = brks)  +
+    labs(
+      title = "Porcentaje de hogares con buena ubicación",
+      subtitle = "De acuerdo con el indicador DP2",
+      caption = "Fuente: Elaboración propia",
+      x = "Estado",
+      y = "Porcentaje de hogares",
+      fill = element_blank()
+    )  +
+    scale_fill_manual(values =  c(Ninguno = "#F2C1B6", Otro = "#F28888", Infonavit = "#D9183B"),
+                      labels = c("No tiene", "Otro", "Infonavit"),
+                      name = "Tipo de crédito")+
+    scale_color_manual(name = element_blank(), values = c(Promedio = "black") )+
+    theme(
+      panel.background = element_rect(fill = "#fffffc", colour = "#423E37",
+                                      size = 2, linetype = "solid"),
+      plot.title = element_text(size = 20, face = "bold", color = "black"),
+      plot.subtitle =  element_text(size = 10, face = "bold", color = "black"),
+      axis.text.x = element_text(family = "OpenSansEmoji", size = 8, face = "bold", 
+                                 colour = "black" ),
+      legend.position = "top",
+      axis.title.y = element_blank()) 
+  
+  ggsave("ubicacion.png", plot = last_plot(), width = 2500, height = 4000, units = "px")
+} #Ubicacion Infonavit
+
+{
+  acces <- datos_feif %>% 
+    select(vid, estr_aseq_bueno, Estado, credito) %>% 
+    group_by(Estado,credito) %>% 
+    summarize(bien = survey_mean(estr_aseq_bueno ==1 ,vartype = NULL),
+              mal = survey_mean(estr_aseq_bueno ==0 ,vartype = NULL)) 
+  
+  brks <- seq(-1,1,.20)
+  lbls = as.character(if_else(brks>0,brks*(100),-brks*100))
+  
+  # Plot
+  ggplot(acces, aes(
+    x = Estado,
+    y = bien,
+    fill = credito)) +
+    geom_bar( stat = "identity", width = 0.8, position = "dodge") +
+    geom_hline(aes(yintercept = median(bien), color = "Promedio"), linetype = "dashed") +
+    coord_flip(ylim = c(0,1))  +
+    scale_y_continuous(labels = lbls,
+                       breaks = brks)  +
+    labs(
+      title = "Porcentaje de hogares con buena asequibilidad",
+      subtitle = "De acuerdo con el indicador DP2",
+      caption = "Fuente: Elaboración propia",
+      x = "Estado",
+      y = "Porcentaje de hogares",
+      fill = element_blank()
+    )  +
+    scale_fill_manual(values =  c(Ninguno = "#F2C1B6", Otro = "#F28888", Infonavit = "#D9183B"),
+                      labels = c("No tiene", "Otro", "Infonavit"),
+                      name = "Tipo de crédito")+
+    scale_color_manual(name = element_blank(), values = c(Promedio = "black") )+
+    theme(
+      panel.background = element_rect(fill = "#fffffc", colour = "#423E37",
+                                      size = 2, linetype = "solid"),
+      plot.title = element_text(size = 20, face = "bold", color = "black"),
+      plot.subtitle =  element_text(size = 10, face = "bold", color = "black"),
+      axis.text.x = element_text(family = "OpenSansEmoji", size = 8, face = "bold", 
+                                 colour = "black" ),
+      legend.position = "top",
+      axis.title.y = element_blank()) 
+  
+  ggsave("asequibilidad.png", plot = last_plot(), width = 2500, height = 4000, units = "px")
+} #Asequibilidad Infonavit
+
+{
+  acces <- datos_feif %>% 
+    select(vid, estr_cul_bueno, Estado, credito) %>% 
+    group_by(Estado,credito) %>% 
+    summarize(bien = survey_mean(estr_cul_bueno ==1 ,vartype = NULL),
+              mal = survey_mean(estr_cul_bueno ==0 ,vartype = NULL)) 
+  
+  brks <- seq(-1,1,.20)
+  lbls = as.character(if_else(brks>0,brks*(100),-brks*100))
+  
+  # Plot
+  ggplot(acces, aes(
+    x = Estado,
+    y = bien,
+    fill = credito)) +
+    geom_bar( stat = "identity", width = 0.8, position = "dodge") +
+    geom_hline(aes(yintercept = median(bien), color = "Promedio"), linetype = "dashed") +
+    coord_flip(ylim = c(0,.80))  +
+    scale_y_continuous(labels = lbls,
+                       breaks = brks)  +
+    labs(
+      title = "Porcentaje de hogares con buena adecuación cultural",
+      subtitle = "De acuerdo con el indicador DP2",
+      caption = "Fuente: Elaboración propia",
+      x = "Estado",
+      y = "Porcentaje de hogares",
+      fill = element_blank()
+    )  +
+    scale_fill_manual(values =  c(Ninguno = "#F2C1B6", Otro = "#F28888", Infonavit = "#D9183B"),
+                      labels = c("No tiene", "Otro", "Infonavit"),
+                      name = "Tipo de crédito")+
+    scale_color_manual(name = element_blank(), values = c(Promedio = "black") )+
+    theme(
+      panel.background = element_rect(fill = "#fffffc", colour = "#423E37",
+                                      size = 2, linetype = "solid"),
+      plot.title = element_text(size = 20, face = "bold", color = "black"),
+      plot.subtitle =  element_text(size = 10, face = "bold", color = "black"),
+      axis.text.x = element_text(family = "OpenSansEmoji", size = 8, face = "bold", 
+                                 colour = "black" ),
+      legend.position = "top",
+      axis.title.y = element_blank()) 
+  
+  ggsave("cultura.png", plot = last_plot(), width = 2500, height = 4000, units = "px")
+} #Cultura Infonavit
+
+{
+  acces <- datos_feif %>% 
+    select(vid, estr_ten_bueno, Estado, credito) %>% 
+    group_by(Estado,credito) %>% 
+    summarize(bien = survey_mean(estr_ten_bueno ==1 ,vartype = NULL),
+              mal = survey_mean(estr_ten_bueno ==0 ,vartype = NULL)) 
+  
+  brks <- seq(-1,1,.20)
+  lbls = as.character(if_else(brks>0,brks*(100),-brks*100))
+  
+  # Plot
+  ggplot(acces, aes(
+    x = Estado,
+    y = bien,
+    fill = credito)) +
+    geom_bar( stat = "identity", width = 0.8, position = "dodge") +
+    geom_hline(aes(yintercept = median(bien), color = "Promedio"), linetype = "dashed") +
+    coord_flip(ylim = c(0,1))  +
+    scale_y_continuous(labels = lbls,
+                       breaks = brks)  +
+    labs(
+      title = "Porcentaje de hogares con buena tenencia",
+      subtitle = "De acuerdo con el indicador DP2",
+      caption = "Fuente: Elaboración propia",
+      x = "Estado",
+      y = "Porcentaje de hogares",
+      fill = element_blank()
+    )  +
+    scale_fill_manual(values =  c(Ninguno = "#F2C1B6", Otro = "#F28888", Infonavit = "#D9183B"),
+                      labels = c("No tiene", "Otro", "Infonavit"),
+                      name = "Tipo de crédito")+
+    scale_color_manual(name = element_blank(), values = c(Promedio = "black") )+
+    theme(
+      panel.background = element_rect(fill = "#fffffc", colour = "#423E37",
+                                      size = 2, linetype = "solid"),
+      plot.title = element_text(size = 20, face = "bold", color = "black"),
+      plot.subtitle =  element_text(size = 10, face = "bold", color = "black"),
+      axis.text.x = element_text(family = "OpenSansEmoji", size = 8, face = "bold", 
+                                 colour = "black" ),
+      legend.position = "top",
+      axis.title.y = element_blank()) 
+  
+  ggsave("tenencia.png", plot = last_plot(), width = 2500, height = 4000, units = "px")
+} #Tenencia Infonavit
+
+{
+  acces <- datos_feif %>% 
+    select(vid, estr_satis_bueno, Estado, credito) %>% 
+    group_by(Estado,credito) %>% 
+    summarize(bien = survey_mean(estr_satis_bueno ==1 ,vartype = NULL),
+              mal = survey_mean(estr_satis_bueno ==0 ,vartype = NULL)) 
+  
+  brks <- seq(-1,1,.20)
+  lbls = as.character(if_else(brks>0,brks*(100),-brks*100))
+  
+  # Plot
+  ggplot(acces, aes(
+    x = Estado,
+    y = bien,
+    fill = credito)) +
+    geom_bar( stat = "identity", width = 0.8, position = "dodge") +
+    geom_hline(aes(yintercept = median(bien), color = "Promedio"), linetype = "dashed") +
+    coord_flip(ylim = c(0,1))  +
+    scale_y_continuous(labels = lbls,
+                       breaks = brks)  +
+    labs(
+      title = "Porcentaje de hogares con buena satisfacción",
+      subtitle = "De acuerdo con el indicador DP2",
+      caption = "Fuente: Elaboración propia",
+      x = "Estado",
+      y = "Porcentaje de hogares",
+      fill = element_blank()
+    )  +
+    scale_fill_manual(values =  c(Ninguno = "#F2C1B6", Otro = "#F28888", Infonavit = "#D9183B"),
+                      labels = c("No tiene", "Otro", "Infonavit"),
+                      name = "Tipo de crédito")+
+    scale_color_manual(name = element_blank(), values = c(Promedio = "black") )+
+    theme(
+      panel.background = element_rect(fill = "#fffffc", colour = "#423E37",
+                                      size = 2, linetype = "solid"),
+      plot.title = element_text(size = 20, face = "bold", color = "black"),
+      plot.subtitle =  element_text(size = 10, face = "bold", color = "black"),
+      axis.text.x = element_text(family = "OpenSansEmoji", size = 8, face = "bold", 
+                                 colour = "black" ),
+      legend.position = "top",
+      axis.title.y = element_blank()) 
+  
+  ggsave("satisfaccion.png", plot = last_plot(), width = 2500, height = 4000, units = "px")
+} #Satisfacción Infonavit
+
+
+
+# Con wrap ----------------------------------------------------------------
+
+{load.emojifont("OpenSansEmoji.ttf")
+  acces <- datos_feif %>% 
+    select(vid, estr_acc_bueno, Estado, credito) %>% 
+    group_by(Estado,credito)  %>% 
+    summarize(bien = survey_mean(estr_acc_bueno ==1 ,vartype = NULL),
+              mal = survey_mean(estr_acc_bueno ==0 ,vartype = NULL)) 
+  
+  
+  brks <- seq(-1,1,.20)
+  lbls = as.character(if_else(brks>0,brks*(100),-brks*100))
+  
+  # Plot
+  ggplot(acces, aes(
+    x = Estado,
+    y = bien,
+    fill = credito)) +
+    geom_bar( stat = "identity", width = 0.8, position = "dodge") +
+    geom_hline(aes(yintercept = median(bien), color = "Promedio"), linetype = "dashed") +
+    coord_flip(ylim = c(0,.8))  +
+    scale_y_continuous(labels = lbls,
+                       breaks = brks)  +
+    labs(
+      title = "Porcentaje de hogares con buena accesibilidad",
+      subtitle = "De acuerdo con el indicador DP2",
+      caption = "Fuente: Elaboración propia",
+      x = "Estado",
+      y = "Porcentaje de hogares",
+      fill = element_blank()
+    )  +
+    scale_fill_manual(values = c(Ninguno = "#F2C1B6", Otro ="#F28888",Infonavit = "#D9183B"),
+                      labels = c("No tiene", "Otro", "Infonavit"),
+                      name = "Tipo de crédito")+
+    scale_color_manual(name = element_blank(), values = c(Promedio = "black") )+
+    theme(
+      panel.background = element_rect(fill = "#fffffc", colour = "#423E37",
+                                      size = 2, linetype = "solid"),
+      plot.title = element_text(size = 20, face = "bold", color = "black"),
+      plot.subtitle =  element_text(size = 10, face = "bold", color = "black"),
+      axis.text.x = element_text(family = "OpenSansEmoji", size = 8, face = "bold", 
+                                 colour = "black" ),
+      legend.position = "top",
+      axis.title.y = element_blank()) +
+    facet_wrap(~credito)
+  
+  
+  ggsave("accesibilidad_wrap.png", plot = last_plot(), width = 5000, height = 2000, units = "px")
+} #Info accesibilidad
+
+{library(emojifont)
+  acces <- datos_feif %>% 
+    select(vid, estr_habit_bueno, Estado, credito) %>% 
+    group_by(Estado,credito) %>% 
+    summarize(bien = survey_mean(estr_habit_bueno ==1 ,vartype = NULL),
+              mal = survey_mean(estr_habit_bueno ==0 ,vartype = NULL)) 
+  
+  
+  brks <- seq(-1,1,.20)
+  lbls = as.character(if_else(brks>0,brks*(100),-brks*100))
+  
+  
+  # Plot
+  ggplot(acces, aes(
+    x = Estado,
+    y = bien,
+    fill = credito)) +
+    geom_bar( stat = "identity", width = 0.8, position = "dodge") +
+    geom_hline(aes(yintercept = median(bien), color = "Promedio"), linetype = "dashed") +
+    coord_flip(ylim = c(0,1))  +
+    scale_y_continuous(labels = lbls,
+                       breaks = brks)  +
+    labs(
+      title = "Porcentaje de hogares con buena Habitabilidad",
+      subtitle = "De acuerdo con el indicador DP2",
+      caption = "Fuente: Elaboración propia",
+      x = "Estado",
+      y = "Porcentaje de hogares",
+      fill = element_blank()
+    )  +
+    scale_fill_manual(values = c(Ninguno = "#F2C1B6", Otro ="#F28888",Infonavit = "#D9183B"),
+                      labels = c("No tiene", "Otro", "Infonavit"),
+                      name = "Tipo de crédito")+
+    scale_color_manual(name = element_blank(), values = c(Promedio = "black") )+
+    theme(
+      panel.background = element_rect(fill = "#fffffc", colour = "#423E37",
+                                      size = 2, linetype = "solid"),
+      plot.title = element_text(size = 20, face = "bold", color = "black"),
+      plot.subtitle =  element_text(size = 10, face = "bold", color = "black"),
+      axis.text.x = element_text(family = "OpenSansEmoji", size = 8, face = "bold", 
+                                 colour = "black" ),
+      legend.position = "top",
+      axis.title.y = element_blank()) +
+    facet_wrap(~credito)
+  
+  ggsave("habitablidad_wrap.png", plot = last_plot(), width = 5000, height = 2000, units = "px")
+} #Habitabilidad Infonavit
+
+{
+  acces <- datos_feif %>% 
+    select(vid, estr_serv_bueno, Estado, credito) %>% 
+    group_by(Estado,credito) %>% 
+    summarize(bien = survey_mean(estr_serv_bueno ==1 ,vartype = NULL),
+              mal = survey_mean(estr_serv_bueno ==0 ,vartype = NULL)) 
+  
+  
+  brks <- seq(-1,1,.20)
+  lbls = as.character(if_else(brks>0,brks*(100),-brks*100))
+  
+  
+  
+  # Plot
+  ggplot(acces, aes(
+    x = Estado,
+    y = bien,
+    fill = credito)) +
+    geom_bar( stat = "identity", width = 0.8, position = "dodge") +
+    geom_hline(aes(yintercept = median(bien), color = "Promedio"), linetype = "dashed") +
+    coord_flip(ylim = c(0,1))  +
+    scale_y_continuous(labels = lbls,
+                       breaks = brks)  +
+    labs(
+      title = "Porcentaje de hogares con buenos servicios",
+      subtitle = "De acuerdo con el indicador DP2",
+      caption = "Fuente: Elaboración propia",
+      x = "Estado",
+      y = "Porcentaje de hogares",
+      fill = element_blank()
+    )  +
+    scale_fill_manual(values = c(Ninguno = "#F2C1B6", Otro ="#F28888",Infonavit = "#D9183B"),
+                      labels = c("No tiene", "Otro", "Infonavit"),
+                      name = "Tipo de crédito")+
+    scale_color_manual(name = element_blank(), values = c(Promedio = "black") )+
+    theme(
+      panel.background = element_rect(fill = "#fffffc", colour = "#423E37",
+                                      size = 2, linetype = "solid"),
+      plot.title = element_text(size = 20, face = "bold", color = "black"),
+      plot.subtitle =  element_text(size = 10, face = "bold", color = "black"),
+      axis.text.x = element_text(family = "OpenSansEmoji", size = 8, face = "bold", 
+                                 colour = "black" ),
+      legend.position = "top",
+      axis.title.y = element_blank()) +
+    facet_wrap(~credito)
+  
+  ggsave("servicios_wrap.png", plot = last_plot(), width = 5000, height = 2000, units = "px")
+} #Servicios Infonavit
+
+{library(emojifont)
+  acces <- datos_feif %>% 
+    select(vid, estr_ubi_bueno, Estado, credito) %>% 
+    group_by(Estado,credito) %>% 
+    summarize(bien = survey_mean(estr_ubi_bueno ==1 ,vartype = NULL),
+              mal = survey_mean(estr_ubi_bueno ==0 ,vartype = NULL)) 
+  
+  
+  brks <- seq(-1,1,.20)
+  lbls = as.character(if_else(brks>0,brks*(100),-brks*100))
+  
+  
+  # Plot
+  ggplot(acces, aes(
+    x = Estado,
+    y = bien,
+    fill = credito)) +
+    geom_bar( stat = "identity", width = 0.8, position = "dodge") +
+    geom_hline(aes(yintercept = median(bien), color = "Promedio"), linetype = "dashed") +
+    coord_flip(ylim = c(0,1))  +
+    scale_y_continuous(labels = lbls,
+                       breaks = brks)  +
+    labs(
+      title = "Porcentaje de hogares con buena ubicación",
+      subtitle = "De acuerdo con el indicador DP2",
+      caption = "Fuente: Elaboración propia",
+      x = "Estado",
+      y = "Porcentaje de hogares",
+      fill = element_blank()
+    )  +
+    scale_fill_manual(values = c(Ninguno = "#F2C1B6", Otro ="#F28888",Infonavit = "#D9183B"),
+                      labels = c("No tiene", "Otro", "Infonavit"),
+                      name = "Tipo de crédito")+
+    scale_color_manual(name = element_blank(), values = c(Promedio = "black") )+
+    theme(
+      panel.background = element_rect(fill = "#fffffc", colour = "#423E37",
+                                      size = 2, linetype = "solid"),
+      plot.title = element_text(size = 20, face = "bold", color = "black"),
+      plot.subtitle =  element_text(size = 10, face = "bold", color = "black"),
+      axis.text.x = element_text(family = "OpenSansEmoji", size = 8, face = "bold", 
+                                 colour = "black" ),
+      legend.position = "top",
+      axis.title.y = element_blank()) +
+    facet_wrap(~credito)
+  
+  ggsave("ubicacion_wrap.png", plot = last_plot(), width = 5000, height = 2000, units = "px")
+
+} #Ubicacion Infonavit
+
+{
+  acces <- datos_feif %>% 
+    select(vid, estr_aseq_bueno, Estado, credito) %>% 
+    group_by(Estado,credito) %>% 
+    summarize(bien = survey_mean(estr_aseq_bueno ==1 ,vartype = NULL),
+              mal = survey_mean(estr_aseq_bueno ==0 ,vartype = NULL)) 
+  
+  brks <- seq(-1,1,.20)
+  lbls = as.character(if_else(brks>0,brks*(100),-brks*100))
+  
+  # Plot
+  ggplot(acces, aes(
+    x = Estado,
+    y = bien,
+    fill = credito)) +
+    geom_bar( stat = "identity", width = 0.8, position = "dodge") +
+    geom_hline(aes(yintercept = median(bien), color = "Promedio"), linetype = "dashed") +
+    coord_flip(ylim = c(0,1))  +
+    scale_y_continuous(labels = lbls,
+                       breaks = brks)  +
+    labs(
+      title = "Porcentaje de hogares con buena asequibilidad",
+      subtitle = "De acuerdo con el indicador DP2",
+      caption = "Fuente: Elaboración propia",
+      x = "Estado",
+      y = "Porcentaje de hogares",
+      fill = element_blank()
+    )  +
+    scale_fill_manual(values = c(Ninguno = "#F2C1B6", Otro ="#F28888",Infonavit = "#D9183B"),
+                      labels = c("No tiene", "Otro", "Infonavit"),
+                      name = "Tipo de crédito")+
+    scale_color_manual(name = element_blank(), values = c(Promedio = "black") )+
+    theme(
+      panel.background = element_rect(fill = "#fffffc", colour = "#423E37",
+                                      size = 2, linetype = "solid"),
+      plot.title = element_text(size = 20, face = "bold", color = "black"),
+      plot.subtitle =  element_text(size = 10, face = "bold", color = "black"),
+      axis.text.x = element_text(family = "OpenSansEmoji", size = 8, face = "bold", 
+                                 colour = "black" ),
+      legend.position = "top",
+      axis.title.y = element_blank()) +
+    facet_wrap(~credito)
+  
+  ggsave("asequibilidad_wrap.png", plot = last_plot(), width = 5000, height = 2000, units = "px")
+} #Asequibilidad Infonavit
+
+{
+  acces <- datos_feif %>% 
+    select(vid, estr_cul_bueno, Estado, credito) %>% 
+    group_by(Estado,credito) %>% 
+    summarize(bien = survey_mean(estr_cul_bueno ==1 ,vartype = NULL),
+              mal = survey_mean(estr_cul_bueno ==0 ,vartype = NULL)) 
+  
+  brks <- seq(-1,1,.20)
+  lbls = as.character(if_else(brks>0,brks*(100),-brks*100))
+  
+  # Plot
+  ggplot(acces, aes(
+    x = Estado,
+    y = bien,
+    fill = credito)) +
+    geom_bar( stat = "identity", width = 0.8, position = "dodge") +
+    geom_hline(aes(yintercept = median(bien), color = "Promedio"), linetype = "dashed") +
+    coord_flip(ylim = c(0,.80))  +
+    scale_y_continuous(labels = lbls,
+                       breaks = brks)  +
+    labs(
+      title = "Porcentaje de hogares con buena adecuación cultural",
+      subtitle = "De acuerdo con el indicador DP2",
+      caption = "Fuente: Elaboración propia",
+      x = "Estado",
+      y = "Porcentaje de hogares",
+      fill = element_blank()
+    )  +
+    scale_fill_manual(values = c(Ninguno = "#F2C1B6", Otro ="#F28888",Infonavit = "#D9183B"),
+                      labels = c("No tiene", "Otro", "Infonavit"),
+                      name = "Tipo de crédito")+
+    scale_color_manual(name = element_blank(), values = c(Promedio = "black") )+
+    theme(
+      panel.background = element_rect(fill = "#fffffc", colour = "#423E37",
+                                      size = 2, linetype = "solid"),
+      plot.title = element_text(size = 20, face = "bold", color = "black"),
+      plot.subtitle =  element_text(size = 10, face = "bold", color = "black"),
+      axis.text.x = element_text(family = "OpenSansEmoji", size = 8, face = "bold", 
+                                 colour = "black" ),
+      legend.position = "top",
+      axis.title.y = element_blank()) +
+    facet_wrap(~credito)
+  
+  ggsave("adecuacion_wrap.png", plot = last_plot(), width = 5000, height = 2000, units = "px")
+} #Cultura Infonavit
+
+{
+  acces <- datos_feif %>% 
+    select(vid, estr_ten_bueno, Estado, credito) %>% 
+    group_by(Estado,credito) %>% 
+    summarize(bien = survey_mean(estr_ten_bueno ==1 ,vartype = NULL),
+              mal = survey_mean(estr_ten_bueno ==0 ,vartype = NULL)) 
+  
+  brks <- seq(-1,1,.20)
+  lbls = as.character(if_else(brks>0,brks*(100),-brks*100))
+  
+  # Plot
+  ggplot(acces, aes(
+    x = Estado,
+    y = bien,
+    fill = credito)) +
+    geom_bar( stat = "identity", width = 0.8, position = "dodge") +
+    geom_hline(aes(yintercept = median(bien), color = "Promedio"), linetype = "dashed") +
+    coord_flip(ylim = c(0,1))  +
+    scale_y_continuous(labels = lbls,
+                       breaks = brks)  +
+    labs(
+      title = "Porcentaje de hogares con buena tenencia",
+      subtitle = "De acuerdo con el indicador DP2",
+      caption = "Fuente: Elaboración propia",
+      x = "Estado",
+      y = "Porcentaje de hogares",
+      fill = element_blank()
+    )  +
+    scale_fill_manual(values = c(Ninguno = "#F2C1B6", Otro ="#F28888",Infonavit = "#D9183B"),
+                      labels = c("No tiene", "Otro", "Infonavit"),
+                      name = "Tipo de crédito")+
+    scale_color_manual(name = element_blank(), values = c(Promedio = "black") )+
+    theme(
+      panel.background = element_rect(fill = "#fffffc", colour = "#423E37",
+                                      size = 2, linetype = "solid"),
+      plot.title = element_text(size = 20, face = "bold", color = "black"),
+      plot.subtitle =  element_text(size = 10, face = "bold", color = "black"),
+      axis.text.x = element_text(family = "OpenSansEmoji", size = 8, face = "bold", 
+                                 colour = "black" ),
+      legend.position = "top",
+      axis.title.y = element_blank()) +
+    facet_wrap(~credito)
+  
+  ggsave("tenencia_wrap.png", plot = last_plot(), width = 5000, height = 2000, units = "px")
+} #Tenencia Infonavit
+
+{
+  acces <- datos_feif %>% 
+    select(vid, estr_satis_bueno, Estado, credito) %>% 
+    group_by(Estado,credito) %>% 
+    summarize(bien = survey_mean(estr_satis_bueno ==1 ,vartype = NULL),
+              mal = survey_mean(estr_satis_bueno ==0 ,vartype = NULL)) 
+  
+  brks <- seq(-1,1,.20)
+  lbls = as.character(if_else(brks>0,brks*(100),-brks*100))
+  
+  # Plot
+  ggplot(acces, aes(
+    x = Estado,
+    y = bien,
+    fill = credito)) +
+    geom_bar( stat = "identity", width = 0.8, position = "dodge") +
+    geom_hline(aes(yintercept = median(bien), color = "Promedio"), linetype = "dashed") +
+    coord_flip(ylim = c(0,1))  +
+    scale_y_continuous(labels = lbls,
+                       breaks = brks)  +
+    labs(
+      title = "Porcentaje de hogares con buena satisfacción",
+      subtitle = "De acuerdo con el indicador DP2",
+      caption = "Fuente: Elaboración propia",
+      x = "Estado",
+      y = "Porcentaje de hogares",
+      fill = element_blank()
+    )  +
+    scale_fill_manual(values =c(Ninguno = "#F2C1B6", Otro ="#F28888",Infonavit = "#D9183B"),
+                      labels = c("No tiene", "Otro", "Infonavit"),
+                      name = "Tipo de crédito")+
+    scale_color_manual(name = element_blank(), values = c(Promedio = "black") )+
+    theme(
+      panel.background = element_rect(fill = "#fffffc", colour = "#423E37",
+                                      size = 2, linetype = "solid"),
+      plot.title = element_text(size = 20, face = "bold", color = "black"),
+      plot.subtitle =  element_text(size = 10, face = "bold", color = "black"),
+      axis.text.x = element_text(family = "OpenSansEmoji", size = 8, face = "bold", 
+                                 colour = "black" ),
+      legend.position = "top",
+      axis.title.y = element_blank()) +
+    facet_wrap(~credito)
+  
+  ggsave("satisfaccion_wrap.png", plot = last_plot(), width = 5000, height = 2000, units = "px")
+} #Satisfacción Infonavit
 
 
             
