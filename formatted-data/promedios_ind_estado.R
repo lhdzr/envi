@@ -93,6 +93,8 @@ creditos$tipo_credito[is.na(creditos$tipo_credito)] <- "Ninguno"
 
 datos_if$credito <- creditos$tipo_credito
 
+table(datos_if$credito)
+
 datos_feif <- as_survey_design(datos_if, ids = UPM_DIS, strata = EST_DIS, weights = FACTOR)
 
 
@@ -1446,7 +1448,7 @@ ggplot(acces, aes(
     y = bien,
     fill = credito)) +
     geom_bar( stat = "identity", width = 0.8, position = "dodge") +
-    geom_hline(aes(yintercept = median(bien), color = "Promedio"), linetype = "dashed") +
+    geom_hline(aes(yintercept = mean(bien), color = "Promedio"), linetype = "dashed") +
     coord_flip(ylim = c(0,.8))  +
     scale_y_continuous(labels = lbls,
                        breaks = brks)  +
@@ -1806,6 +1808,242 @@ ggplot(acces, aes(
   
   ggsave("satisfaccion_wrap.png", plot = last_plot(), width = 5000, height = 2000, units = "px")
 } #Satisfacción Infonavit
+
+
+
+
+# Situaciones -------------------------------------------------------------
+
+#Hago el join 
+ts_dem <- read.csv("tsdem.csv") %>% 
+  left_join(datos_if, by = "vid") 
+
+datos_feif2 <- as_survey_design(ts_dem, ids = UPM_DIS.x, strata = EST_DIS.x, weights = FACTOR.x)
+
+
+#promedio general
+promedio <- datos_feif2 %>% 
+  summarize(Satisfacción = survey_mean(estr_satis_bueno ==1, vartype = NULL),
+            Ubicación = survey_mean(estr_ubi_bueno == 1, vartype = NULL),
+            Accesibilidad = survey_mean(estr_acc_bueno ==1, vartype = NULL),
+            Habitabilidad = survey_mean(estr_habit_bueno ==1, vartype = NULL),
+            Servicios = survey_mean(estr_serv_bueno ==1, vartype = NULL),
+            Asequibilidad = survey_mean(estr_aseq_bueno ==1, vartype = NULL),
+            Tenencia = survey_mean(estr_ten_bueno ==1, vartype = NULL),
+            Cultura = survey_mean(estr_cul_bueno ==1, vartype = NULL)) %>% 
+  mutate(nivel = "Promedio")
+
+
+
+educacion <- datos_feif2 %>% 
+  filter(PAREN == 1) %>% 
+  group_by(nivel = NIV < 3) %>% 
+  summarize(Satisfacción = survey_mean(estr_satis_bueno ==1, vartype = NULL),
+            Ubicación = survey_mean(estr_ubi_bueno == 1, vartype = NULL),
+            Accesibilidad = survey_mean(estr_acc_bueno ==1, vartype = NULL),
+            Habitabilidad = survey_mean(estr_habit_bueno ==1, vartype = NULL),
+            Servicios = survey_mean(estr_serv_bueno ==1, vartype = NULL),
+            Asequibilidad = survey_mean(estr_aseq_bueno ==1, vartype = NULL),
+            Tenencia = survey_mean(estr_ten_bueno ==1, vartype = NULL),
+            Cultura = survey_mean(estr_cul_bueno ==1, vartype = NULL)) %>% 
+  filter(nivel == TRUE) %>% 
+  mutate(nivel = if_else(nivel == TRUE, "Educación", "NA"))
+
+
+indigena <- datos_feif2 %>% 
+  filter(PAREN == 1) %>% 
+  group_by(nivel = P2_6 == 1) %>% 
+  summarize(Satisfacción = survey_mean(estr_satis_bueno ==1, vartype = NULL),
+            Ubicación = survey_mean(estr_ubi_bueno == 1, vartype = NULL),
+            Accesibilidad = survey_mean(estr_acc_bueno ==1, vartype = NULL),
+            Habitabilidad = survey_mean(estr_habit_bueno ==1, vartype = NULL),
+            Servicios = survey_mean(estr_serv_bueno ==1, vartype = NULL),
+            Asequibilidad = survey_mean(estr_aseq_bueno ==1, vartype = NULL),
+            Tenencia = survey_mean(estr_ten_bueno ==1, vartype = NULL),
+            Cultura = survey_mean(estr_cul_bueno ==1, vartype = NULL)) %>% 
+  filter(nivel == TRUE) %>% 
+  mutate(nivel = if_else(nivel == TRUE, "Indigena", "NA"))
+
+mujer <- datos_feif2 %>% 
+  group_by(nivel = SEXO == 2) %>% 
+  summarize(Satisfacción = survey_mean(estr_satis_bueno ==1, vartype = NULL),
+            Ubicación = survey_mean(estr_ubi_bueno == 1, vartype = NULL),
+            Accesibilidad = survey_mean(estr_acc_bueno ==1, vartype = NULL),
+            Habitabilidad = survey_mean(estr_habit_bueno ==1, vartype = NULL),
+            Servicios = survey_mean(estr_serv_bueno ==1, vartype = NULL),
+            Asequibilidad = survey_mean(estr_aseq_bueno ==1, vartype = NULL),
+            Tenencia = survey_mean(estr_ten_bueno ==1, vartype = NULL),
+            Cultura = survey_mean(estr_cul_bueno ==1, vartype = NULL)) %>% 
+  filter(nivel == TRUE) %>% 
+  mutate(nivel = if_else(nivel == TRUE, "Mujer", "NA"))
+
+
+
+
+
+combinado <- bind_rows(mujer, indigena, educacion)
+combinados <- pivot_longer(combinado, cols = c("Satisfacción", "Ubicación", "Accesibilidad",
+                                               "Habitabilidad", "Servicios",
+                                               "Asequibilidad", "Tenencia",
+                                               "Cultura"),
+                           names_to = c("indice"))
+promedios <- pivot_longer(promedio, cols = c("Satisfacción", "Ubicación", "Accesibilidad",
+                                             "Habitabilidad", "Servicios",
+                                             "Asequibilidad", "Tenencia",
+                                             "Cultura"),
+                          names_to = c("indice")) %>% 
+  mutate(promedio = value)
+
+tabla <- combinados %>% 
+  left_join(select(promedios,indice, promedio), by = "indice")
+
+
+ggplot(tabla, aes(
+  x = indice,
+  y = value,
+  fill = nivel)) +
+  geom_bar(stat = "identity", width = 0.8, position = "dodge") +
+  labs(
+    title = "Porcentaje de hogares en buen estado, por índice",
+    subtitle = "De acuerdo con el indicador DP2",
+    caption = "Fuente: Elaboración propia",
+    x = "Índice",
+    y = "Porcentaje de hogares",
+    fill = element_blank()
+  )  +
+  coord_cartesian( ylim = c(0.45, 0.93))+
+  geom_errorbar(aes(ymax = promedio, ymin = promedio)) +
+  scale_fill_manual(values =c(Educación = "#F2C1B6", Indigena ="#F28888",
+                              Mujer = "#D9183B", Promedio = "#252525"),
+                    labels = c("Bajo nivel escolar", "Jefe de hogar indígena", 
+                               "Jefe de hogar mujer", "Promedio"),
+                    name = "Condición")+
+  theme(
+    panel.background = element_rect(fill = "#fffffc", colour = "#423E37",
+                                    size = 2, linetype = "solid"),
+    plot.title = element_text(size = 20, face = "bold", color = "black"),
+    plot.subtitle =  element_text(size = 10, face = "bold", color = "black"),
+    axis.text.x = element_text(size = 10, face = "bold", 
+                               colour = "black",  angle = 0, vjust = 0.5),
+    legend.position = "top",
+    axis.title.y = element_text(size = 13, face = "bold"),
+    axis.title.x = element_text(colour = "black", face = "bold"),
+    axis.text.y = element_text(face = "bold")) 
+
+ggsave("indice_gen.png", plot = last_plot(), width = 5000, height = 2000, units = "px")
+
+
+
+
+
+# Peor --------------------------------------------------------------------
+
+#promedio general
+promedio <- datos_feif2 %>% 
+  summarize(Satisfacción = survey_mean(estr_satis_bueno == 0, vartype = NULL),
+            Ubicación = survey_mean(estr_ubi_bueno == 0, vartype = NULL),
+            Accesibilidad = survey_mean(estr_acc_bueno == 0, vartype = NULL),
+            Habitabilidad = survey_mean(estr_habit_bueno == 0, vartype = NULL),
+            Servicios = survey_mean(estr_serv_bueno == 0, vartype = NULL),
+            Asequibilidad = survey_mean(estr_aseq_bueno == 0, vartype = NULL),
+            Tenencia = survey_mean(estr_ten_bueno == 0, vartype = NULL),
+            Cultura = survey_mean(estr_satis_bueno == 0, vartype = NULL)) %>% 
+  mutate(nivel = "Promedio")
+
+
+educacion <- datos_feif2 %>% 
+  filter(PAREN == 1) %>% 
+  group_by(nivel = NIV < 3) %>% 
+  summarize(Satisfacción = survey_mean(estr_satis_bueno == 0, vartype = NULL),
+            Ubicación = survey_mean(estr_ubi_bueno== 0, vartype = NULL),
+            Accesibilidad = survey_mean(estr_acc_bueno== 0, vartype = NULL),
+            Habitabilidad = survey_mean(estr_habit_bueno == 0, vartype = NULL),
+            Servicios = survey_mean(estr_serv_bueno ==0, vartype = NULL),
+            Asequibilidad = survey_mean(estr_aseq_bueno ==0, vartype = NULL),
+            Tenencia = survey_mean(estr_ten_bueno ==0, vartype = NULL),
+            Cultura = survey_mean(estr_satis_bueno ==0, vartype = NULL)) %>% 
+  filter(nivel == TRUE) %>% 
+  mutate(nivel = if_else(nivel == TRUE, "Educación", "NA"))
+
+
+indigena <- datos_feif2 %>% 
+  filter(PAREN == 1) %>% 
+  group_by(nivel = P2_6 == 1) %>% 
+  summarize(Satisfacción = survey_mean(estr_satis_bueno ==0, vartype = NULL),
+            Ubicación = survey_mean(estr_ubi_bueno == 0, vartype = NULL),
+            Accesibilidad = survey_mean(estr_acc_bueno ==0, vartype = NULL),
+            Habitabilidad = survey_mean(estr_habit_bueno ==0, vartype = NULL),
+            Servicios = survey_mean(estr_serv_bueno ==0, vartype = NULL),
+            Asequibilidad = survey_mean(estr_aseq_bueno==0, vartype = NULL),
+            Tenencia = survey_mean(estr_ten_bueno ==0, vartype = NULL),
+            Cultura = survey_mean(estr_satis_bueno ==0, vartype = NULL)) %>% 
+  filter(nivel == TRUE) %>% 
+  mutate(nivel = if_else(nivel == TRUE, "Indigena", "NA"))
+
+mujer <- datos_feif2 %>% 
+  group_by(nivel = SEXO == 2) %>% 
+  summarize(Satisfacción = survey_mean(estr_satis_bueno ==0, vartype = NULL),
+            Ubicación = survey_mean(estr_ubi_bueno == 0, vartype = NULL),
+            Accesibilidad = survey_mean(estr_acc_bueno ==0, vartype = NULL),
+            Habitabilidad = survey_mean(estr_habit_bueno ==0, vartype = NULL),
+            Servicios = survey_mean(estr_serv_bueno ==0, vartype = NULL),
+            Asequibilidad = survey_mean(estr_aseq_bueno ==0, vartype = NULL),
+            Tenencia = survey_mean(estr_ten_bueno ==0, vartype = NULL),
+            Cultura = survey_mean(estr_satis_bueno ==0, vartype = NULL)) %>% 
+  filter(nivel == TRUE) %>% 
+  mutate(nivel = if_else(nivel == TRUE, "Mujer", "NA"))
+
+
+
+
+
+combinado <- bind_rows(mujer, indigena, educacion, promedio)
+combinados <- pivot_longer(combinado, cols = c("Satisfacción", "Ubicación", "Accesibilidad",
+                                               "Habitabilidad", "Servicios",
+                                               "Asequibilidad", "Tenencia",
+                                               "Cultura"),
+                           names_to = c("indice"))
+promedios <- pivot_longer(promedio, cols = c("Satisfacción", "Ubicación", "Accesibilidad",
+                                             "Habitabilidad", "Servicios",
+                                             "Asequibilidad", "Tenencia",
+                                             "Cultura"),
+                          names_to = c("indice")) %>% 
+  mutate(promedio = value)
+
+tabla <- combinados %>% 
+  left_join(promedios, by = "indice") %>% 
+  select(indice, nivel = nivel.x , value = value.x, promedio)
+
+
+ggplot(combinados, aes(
+  x = indice,
+  y = value,
+  fill = nivel)) +
+  geom_bar(stat = "identity", width = 0.8, position = "dodge") +
+  labs(
+    title = "Porcentaje de hogares en buen estado, por índice",
+    subtitle = "De acuerdo con el indicador DP2",
+    caption = "Fuente: Elaboración propia",
+    x = "Índice",
+    y = "Porcentaje de hogares",
+    fill = element_blank()
+  )  +
+  scale_fill_manual(values =c(Educación = "#F2C1B6", Indigena ="#F28888",
+                              Mujer = "#D9183B"),
+                    labels = c("Bajo nivel escolar", "Jefe de hogar indígena", 
+                               "Jefe de hogar mujer"),
+                    name = "Condición")+
+  theme(
+    panel.background = element_rect(fill = "#fffffc", colour = "#423E37",
+                                    size = 2, linetype = "solid"),
+    plot.title = element_text(size = 20, face = "bold", color = "black"),
+    plot.subtitle =  element_text(size = 10, face = "bold", color = "black"),
+    axis.text.x = element_text(family = "OpenSansEmoji", size = 8, face = "bold", 
+                               colour = "black" ),
+    legend.position = "top",
+    axis.title.y = element_blank()) 
+
+
 
 
             

@@ -25,7 +25,7 @@ bien <- tabla %>%
 bien$porcentaje <- as.numeric(bien$porcentaje)
 
 
-g<- ggplot(bien)+
+ggplot(bien)+
   geom_col(aes(x = nombre, y = porcentaje, fill= tipo), position = "dodge")+
   labs(title= "Porcentaje de casas con una baja clasificación, por índice",
        x = "Índice",
@@ -39,7 +39,21 @@ g<- ggplot(bien)+
         plot.subtitle =  element_text(size = 10, face = "bold", color = "black")
         )
   
-ggsave(g, units = "px", width = 300, height = 300)
+
+ggsave("comparativas_2.png", units = "px", width = 6000, height = 3000)
+
+
+
+
+
+
+
+
+
+
+
+
+
 
   
   
