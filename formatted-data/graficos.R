@@ -1,5 +1,5 @@
 # GENERALES -----------------------------------------------------------
-{acces <- datos_feif %>% 
+acces <- datos_feif %>% 
   select(vid, estr_acc_bueno, Estado,credito) %>% 
   group_by(Estado, estr_acc_bueno, credito) %>% 
   summarize(survey_total(vartype = NULL)) %>%  

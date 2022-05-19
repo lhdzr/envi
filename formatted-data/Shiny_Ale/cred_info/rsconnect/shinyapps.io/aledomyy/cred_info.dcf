@@ -1,0 +1,13 @@
+name: cred_info
+title:
+username:
+account: aledomyy
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 6259746
+bundleId: 5884885
+url: https://aledomyy.shinyapps.io/cred_info/
+when: 1652062719.17491
+lastSyncTime: 1652062719.17493
+asMultiple: FALSE
+asStatic: FALSE

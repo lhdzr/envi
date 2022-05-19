@@ -4,8 +4,16 @@ library(tidyverse)
 datos <- read_csv("estratos_onu.csv")
 vivienda <- read_csv("tvivienda.csv")
 
+codigos <-
+  read_csv("codigos_identidad.csv", col_names = c("ENT", "Estado"))
+
+vivienda <- read_csv("tvivienda.csv")  %>%
+  left_join(estratos, by = "vid") %>%
+  left_join(codigos, by = "ENT")
+
 vids <- datos %>% 
   select(vid)
+
 
 
 # riesgos ------------------------------------------------------
@@ -53,12 +61,28 @@ riesgos <- vids %>%
 # Join con data -----------------------------------------------------------
 
 full_datos <- riesgos %>% 
-  full
+  full_join(vivienda, by = "vid") %>% 
+  left_join(codigos, by = "ENT")
 
 # Riesgo en tenencia ------------------------------------------------------
+datos_feif <-
+  as_survey_design(full_datos,
+                   ids = UPM_DIS,
+                   strata = EST_DIS,
+                   weights = FACTOR)
 
-ten <- riesgo_tenencia %>% 
-  left_join 
+
+vuln <- datos_feif %>% 
+  group_by(Estado) %>% 
+  summarise(tenencia = survey_mean(riesgo_tenencia ==1, vartype = NULL),
+            cc = survey_mean(riesgo_cc ==1, vartype = NULL),
+            discapacidad = survey_mean(riesgo_disc ==1, vartype = NULL),
+            desempleo = survey_mean(riesgo_desempleo ==1, vartype = NULL))
+
+
+write_csv(vuln, "riesgos.csv")
+
+
 
 
 
