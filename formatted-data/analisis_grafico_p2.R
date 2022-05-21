@@ -13,15 +13,15 @@ datos <-select(read_csv("p2_accesibilidad.csv"), Accesibilidad = p2distance.2,vi
   inner_join(select(read_csv("p2_servicios.csv"),Servicios = p2distance.2,vid), by = "vid") %>% 
   inner_join(select(read_csv("p2_ubicacion.csv"),Ubicación = p2distance.3,vid), by = "vid") %>% 
   inner_join(select(filter(read_csv("indice_tenencia.csv"), P5_1 !=1), 
-                    Tenencia = indice,vid), by = "vid")
-
-
+                    Tenencia = indice,vid), by = "vid") %>% 
+  inner_join(select(read_csv("tvivienda.csv"), ENT, vid, P4_3), by = "vid") %>% 
+  inner_join(read_csv("codigos_identidad.csv"), by = "ENT")
 
 
 # Histogramas de cada uno -------------------------------------------------
 #Escribe la variable de interes, las opciones son;
 #p2_acces, p2_habit, p2_satis, p2_serv, p2_ubi
-var <- datos$p2_ubi
+var <- datos$Ubicación
 
 ggplot(datos, aes(x = var)) +
   geom_histogram(bins = 30) 
@@ -81,7 +81,7 @@ ggplot(datos_ind, aes(x = Satisfacción, y = p2distance.2))+
 datos <- as_tibble(lapply(datos, function(x) ifelse(x ==0, 0.0000001, x)))
 
 lm <- lm(log(Satisfacción) ~ log(Habitabilidad) + log(Servicios) + log(Ubicación) + 
-           log(Accesibilidad) + log(Tenencia), datos)
+           log(Accesibilidad) + log(Tenencia) +  Accesibilidad, datos)
 
 summary(lm)
 
@@ -93,6 +93,14 @@ summary(slm)
 plot(lm)
 
 
+# Regresion con interaccion -----------------------------------------------
+datos$Estado <- as.factor(datos$Estado)
+datos$P4_31 <- as.factor(ifelse(datos$P4_3 %in% c(1,2,3,7), "casa", "apartamento"))
+mean(is.na(datos$P4_31))
+
+lm <- lm(log(Satisfacción) ~ log(Habitabilidad) + log(Servicios) + log(Ubicación) + 
+           log(Accesibilidad) + log(Tenencia)  + Estado, datos)
+summary(lm)
 
 
 
